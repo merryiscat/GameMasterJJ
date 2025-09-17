@@ -867,7 +867,407 @@ X-RateLimit-Type: requests
 }
 ```
 
-## **4.10 개발자 가이드**
+## **4.10 DLC 콘텐츠 관리 API**
+
+### **4.10.1 DLC 카탈로그 조회**
+```http
+GET /dlc/catalog
+```
+
+**Query Parameters**
+- `category`: string - DLC 카테고리 (story, character, system)
+- `featured`: boolean - 추천 DLC만 조회
+- `owned`: boolean - 사용자가 소유한 DLC만 조회
+- `price_range`: string - 가격 범위 필터 (예: "0-5")
+
+**Response**
+```json
+{
+  "success": true,
+  "data": {
+    "dlcs": [
+      {
+        "id": "dlc-dragon-dungeon-001",
+        "title": "용의 던전",
+        "description": "고전적인 판타지 던전 크롤링 어드벤처",
+        "category": "story",
+        "price": {
+          "usd": 2.99,
+          "krw": 3900
+        },
+        "contentInfo": {
+          "estimatedPlayTime": "5-8 hours",
+          "difficulty": "intermediate",
+          "themes": ["fantasy", "dungeon", "treasure"]
+        },
+        "requirements": {
+          "minimumLevel": 1,
+          "requiredDlcs": [],
+          "characterClasses": ["all"]
+        },
+        "media": {
+          "thumbnailUrl": "/images/dlc-dragon-dungeon-thumb.jpg",
+          "screenshotUrls": [
+            "/images/dlc-dragon-dungeon-1.jpg",
+            "/images/dlc-dragon-dungeon-2.jpg"
+          ],
+          "trailerUrl": "/videos/dlc-dragon-dungeon-trailer.mp4"
+        },
+        "ratings": {
+          "average": 4.6,
+          "totalReviews": 234,
+          "distribution": {
+            "5": 156,
+            "4": 45,
+            "3": 20,
+            "2": 8,
+            "1": 5
+          }
+        },
+        "releaseDate": "2025-10-15T00:00:00Z",
+        "lastUpdated": "2025-10-20T10:30:00Z",
+        "isOwned": false,
+        "isFeatured": true
+      }
+    ],
+    "pagination": {
+      "currentPage": 1,
+      "totalPages": 5,
+      "totalItems": 24,
+      "itemsPerPage": 5
+    },
+    "filters": {
+      "categories": ["story", "character", "system"],
+      "priceRanges": ["0-2", "2-5", "5-10"],
+      "themes": ["fantasy", "sci-fi", "horror", "mystery"]
+    }
+  }
+}
+```
+
+### **4.10.2 DLC 상세 정보**
+```http
+GET /dlc/{dlcId}
+```
+
+**Response**
+```json
+{
+  "success": true,
+  "data": {
+    "dlc": {
+      "id": "dlc-dragon-dungeon-001",
+      "title": "용의 던전",
+      "fullDescription": "고대 용이 잠들어 있는 깊은 던전을 탐험하세요...",
+      "detailedContent": {
+        "storylets": 15,
+        "newNpcs": 8,
+        "newItems": 12,
+        "newSpells": 6,
+        "newLocations": 5
+      },
+      "authorInfo": {
+        "name": "김TRPG작가",
+        "bio": "10년 경력의 TRPG 캠페인 디자이너",
+        "otherWorks": ["마법사의 탑", "바다의 전설"]
+      },
+      "changelog": [
+        {
+          "version": "1.1",
+          "date": "2025-10-20T10:30:00Z",
+          "changes": [
+            "NPC 대화 품질 개선",
+            "밸런스 조정",
+            "버그 수정"
+          ]
+        }
+      ],
+      "reviews": [
+        {
+          "id": "review-001",
+          "userId": "user-123",
+          "username": "TRPGLover",
+          "rating": 5,
+          "title": "정말 재미있는 던전!",
+          "content": "스토리가 탄탄하고 NPC들이 매력적입니다...",
+          "date": "2025-10-18T14:20:00Z",
+          "helpful": 15,
+          "verified": true
+        }
+      ]
+    }
+  }
+}
+```
+
+### **4.10.3 DLC 구매**
+```http
+POST /dlc/{dlcId}/purchase
+```
+
+**Request Body**
+```json
+{
+  "paymentMethod": "app_store" | "google_play" | "stripe",
+  "promoCode": "HALLOWEEN2025",
+  "platform": "ios" | "android" | "web"
+}
+```
+
+**Response**
+```json
+{
+  "success": true,
+  "data": {
+    "purchaseId": "purchase-uuid",
+    "transactionId": "txn-external-id",
+    "dlcId": "dlc-dragon-dungeon-001",
+    "price": {
+      "original": 2.99,
+      "final": 2.39,
+      "currency": "USD",
+      "discount": 0.60
+    },
+    "paymentStatus": "completed",
+    "licenseKey": "DLC-DRAG-DUNG-001-ABCD-EFGH",
+    "downloadInfo": {
+      "downloadUrl": "/api/dlc/download/dlc-dragon-dungeon-001",
+      "expiresAt": "2025-10-25T10:30:00Z",
+      "fileSize": "15.6 MB",
+      "checksum": "sha256:abcdef123456..."
+    },
+    "receipt": {
+      "receiptId": "receipt-uuid",
+      "receiptUrl": "/receipts/receipt-uuid.pdf"
+    }
+  }
+}
+```
+
+### **4.10.4 DLC 다운로드**
+```http
+GET /dlc/{dlcId}/download
+```
+
+**Headers**
+```
+Authorization: Bearer <license_key>
+```
+
+**Response**
+```json
+{
+  "success": true,
+  "data": {
+    "contentPackage": {
+      "storylets": [ /* 스토리렛 데이터 */ ],
+      "characters": [ /* 새로운 캐릭터 클래스 */ ],
+      "items": [ /* 새로운 아이템들 */ ],
+      "npcs": [ /* 새로운 NPC들 */ ],
+      "locations": [ /* 새로운 위치들 */ ],
+      "rules": [ /* 새로운 규칙들 */ ]
+    },
+    "metadata": {
+      "version": "1.1",
+      "compatibility": "app-version-1.0+",
+      "installation": {
+        "autoInstall": true,
+        "requiresRestart": false
+      }
+    }
+  }
+}
+```
+
+### **4.10.5 DLC 라이센스 검증**
+```http
+GET /dlc/{dlcId}/verify
+```
+
+**Headers**
+```
+Authorization: Bearer <license_key>
+```
+
+**Response**
+```json
+{
+  "success": true,
+  "data": {
+    "isValid": true,
+    "licenseInfo": {
+      "dlcId": "dlc-dragon-dungeon-001",
+      "userId": "user-uuid",
+      "purchaseDate": "2025-10-15T10:30:00Z",
+      "licenseType": "full",
+      "expiresAt": null,
+      "activations": {
+        "used": 2,
+        "maximum": 5
+      }
+    },
+    "contentAccess": {
+      "storylets": true,
+      "characters": true,
+      "items": true,
+      "npcs": true
+    }
+  }
+}
+```
+
+### **4.10.6 사용자 DLC 라이브러리**
+```http
+GET /users/{userId}/dlc-library
+```
+
+**Response**
+```json
+{
+  "success": true,
+  "data": {
+    "ownedDlcs": [
+      {
+        "dlcId": "dlc-dragon-dungeon-001",
+        "title": "용의 던전",
+        "purchaseDate": "2025-10-15T10:30:00Z",
+        "version": "1.1",
+        "lastPlayed": "2025-10-22T15:45:00Z",
+        "playtimeHours": 6.5,
+        "isInstalled": true,
+        "autoUpdate": true
+      }
+    ],
+    "wishlist": [
+      {
+        "dlcId": "dlc-space-adventure-002",
+        "addedDate": "2025-10-20T12:00:00Z",
+        "priceAlert": true,
+        "targetPrice": 1.99
+      }
+    ],
+    "statistics": {
+      "totalDlcs": 3,
+      "totalSpent": 8.97,
+      "totalPlaytime": 23.5,
+      "favoriteCategory": "story"
+    }
+  }
+}
+```
+
+### **4.10.7 DLC 리뷰 시스템**
+```http
+POST /dlc/{dlcId}/reviews
+```
+
+**Request Body**
+```json
+{
+  "rating": 5,
+  "title": "정말 재미있는 던전!",
+  "content": "스토리가 탄탄하고 NPC들이 매력적입니다. 특히 용과의 최종 전투가 인상적이었어요.",
+  "playtimeHours": 6.5,
+  "recommendToFriends": true
+}
+```
+
+**Response**
+```json
+{
+  "success": true,
+  "data": {
+    "reviewId": "review-uuid",
+    "status": "published",
+    "moderationRequired": false
+  }
+}
+```
+
+### **4.10.8 DLC 업데이트 확인**
+```http
+GET /dlc/updates
+```
+
+**Query Parameters**
+- `installedDlcs`: string[] - 설치된 DLC ID 목록
+
+**Response**
+```json
+{
+  "success": true,
+  "data": {
+    "availableUpdates": [
+      {
+        "dlcId": "dlc-dragon-dungeon-001",
+        "currentVersion": "1.0",
+        "latestVersion": "1.1",
+        "updateSize": "2.3 MB",
+        "changelog": [
+          "NPC 대화 품질 개선",
+          "밸런스 조정"
+        ],
+        "isRequired": false,
+        "releaseDate": "2025-10-20T10:30:00Z"
+      }
+    ],
+    "newReleases": [
+      {
+        "dlcId": "dlc-horror-mansion-003",
+        "title": "공포의 저택",
+        "releaseDate": "2025-10-25T00:00:00Z",
+        "isPreOrder": true,
+        "discountPercentage": 20
+      }
+    ]
+  }
+}
+```
+
+## **4.11 결제 및 구독 API**
+
+### **4.11.1 결제 처리**
+```http
+POST /payments/process
+```
+
+**Request Body**
+```json
+{
+  "items": [
+    {
+      "type": "dlc",
+      "itemId": "dlc-dragon-dungeon-001",
+      "quantity": 1
+    }
+  ],
+  "paymentMethod": {
+    "type": "app_store" | "google_play" | "stripe",
+    "token": "payment-token-from-client"
+  },
+  "promoCode": "HALLOWEEN2025",
+  "billingAddress": {
+    "country": "KR",
+    "postalCode": "12345"
+  }
+}
+```
+
+### **4.11.2 환불 처리**
+```http
+POST /payments/{paymentId}/refund
+```
+
+**Request Body**
+```json
+{
+  "reason": "not_satisfied" | "technical_issue" | "accidental_purchase",
+  "comment": "게임이 기대와 달랐습니다",
+  "partialRefund": false
+}
+```
+
+## **4.12 개발자 가이드**
 
 ### **4.10.1 SDK 및 클라이언트 라이브러리**
 
