@@ -8,5 +8,14 @@
     ],
     "deny": [],
     "ask": []
-  }
+  },
+  "enabledMcpjsonServers": [
+    "context7",
+    "playwright",
+    "github",
+    "firebase",
+    "fetch",
+    "sequential-thinking"
+  ],
+  "enableAllProjectMcpServers": true
 }
