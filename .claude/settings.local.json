@@ -4,11 +4,15 @@
       "Bash(python:*)",
       "Bash(pip install:*)",
       "Bash(curl:*)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(pip show:*)",
+      "WebFetch(domain:boardgamegeek.com)",
+      "WebFetch(domain:api.geekdo.com)"
     ],
     "deny": [],
     "ask": []
   },
+  "enableAllProjectMcpServers": true,
   "enabledMcpjsonServers": [
     "context7",
     "playwright",
@@ -16,6 +20,5 @@
     "firebase",
     "fetch",
     "sequential-thinking"
-  ],
-  "enableAllProjectMcpServers": true
+  ]
 }
