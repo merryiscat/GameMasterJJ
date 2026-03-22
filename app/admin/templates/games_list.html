@@ -1,0 +1,115 @@
+{% extends "base.html" %}
+{% set active_menu = "games" %}
+{% block title %}게임 관리 - GMJJ 어드민{% endblock %}
+
+{% block content %}
+<div class="flex justify-between items-center mb-6">
+    <h2 class="text-2xl font-bold text-gray-800">게임 관리</h2>
+    <a href="/admin/games/new"
+       class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition">
+        + 수동 추가
+    </a>
+</div>
+
+<!-- ========== 검색 ========== -->
+<div class="bg-white rounded-lg shadow p-4 mb-6">
+    <form method="GET" action="/admin/games" class="flex gap-4 items-end">
+        <div class="flex-1">
+            <label class="block text-sm text-gray-600 mb-1">게임 이름 검색</label>
+            <input type="text" name="search" value="{{ search }}" placeholder="한글 또는 영문 이름"
+                   class="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400">
+        </div>
+        <button type="submit"
+                class="bg-gray-700 text-white px-6 py-2 rounded hover:bg-gray-800 transition">
+            검색
+        </button>
+        {% if search %}
+        <a href="/admin/games" class="text-gray-500 hover:text-gray-700 py-2">초기화</a>
+        {% endif %}
+    </form>
+</div>
+
+<!-- ========== 결과 정보 ========== -->
+<p class="text-sm text-gray-500 mb-3">
+    전체 {{ total }}건 | {{ page }} / {{ total_pages }} 페이지
+</p>
+
+<!-- ========== 게임 목록 테이블 ========== -->
+<div class="bg-white rounded-lg shadow overflow-x-auto">
+    <table class="w-full text-sm">
+        <thead class="bg-gray-50">
+            <tr>
+                <th class="px-4 py-3 text-left text-gray-600">ID</th>
+                <th class="px-4 py-3 text-left text-gray-600">한글명</th>
+                <th class="px-4 py-3 text-left text-gray-600">영문명</th>
+                <th class="px-4 py-3 text-right text-gray-600">출시년</th>
+                <th class="px-4 py-3 text-right text-gray-600">인원</th>
+                <th class="px-4 py-3 text-right text-gray-600">평점</th>
+                <th class="px-4 py-3 text-right text-gray-600">난이도</th>
+                <th class="px-4 py-3 text-center text-gray-600">액션</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for g in games %}
+            <tr class="border-t hover:bg-gray-50">
+                <td class="px-4 py-3 text-gray-500">{{ g.id }}</td>
+                <td class="px-4 py-3 font-medium">{{ g.name_ko }}</td>
+                <td class="px-4 py-3 text-gray-500">{{ g.name_en or "-" }}</td>
+                <td class="px-4 py-3 text-right">{{ g.year_published or "-" }}</td>
+                <td class="px-4 py-3 text-right">
+                    {% if g.min_players and g.max_players %}
+                        {{ g.min_players }}~{{ g.max_players }}
+                    {% elif g.min_players %}
+                        {{ g.min_players }}+
+                    {% else %}
+                        -
+                    {% endif %}
+                </td>
+                <td class="px-4 py-3 text-right">
+                    {{ "%.1f"|format(g.rating) if g.rating else "-" }}
+                </td>
+                <td class="px-4 py-3 text-right">
+                    {{ "%.1f"|format(g.difficulty) if g.difficulty else "-" }}
+                </td>
+                <td class="px-4 py-3 text-center">
+                    <a href="/admin/games/{{ g.id }}/edit"
+                       class="text-blue-600 hover:text-blue-800 text-xs">수정</a>
+                </td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="8" class="px-4 py-8 text-center text-gray-400">
+                    게임이 없습니다.
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<!-- ========== 페이지네이션 ========== -->
+{% if total_pages > 1 %}
+<div class="flex justify-center gap-2 mt-6">
+    {% if page > 1 %}
+    <a href="/admin/games?page={{ page - 1 }}&search={{ search }}"
+       class="px-3 py-2 border rounded hover:bg-gray-100">이전</a>
+    {% endif %}
+
+    {% for p in range(1, total_pages + 1) %}
+        {% if p == page %}
+        <span class="px-3 py-2 bg-blue-600 text-white rounded">{{ p }}</span>
+        {% elif (p - page)|abs <= 3 or p == 1 or p == total_pages %}
+        <a href="/admin/games?page={{ p }}&search={{ search }}"
+           class="px-3 py-2 border rounded hover:bg-gray-100">{{ p }}</a>
+        {% elif (p - page)|abs == 4 %}
+        <span class="px-2 py-2 text-gray-400">...</span>
+        {% endif %}
+    {% endfor %}
+
+    {% if page < total_pages %}
+    <a href="/admin/games?page={{ page + 1 }}&search={{ search }}"
+       class="px-3 py-2 border rounded hover:bg-gray-100">다음</a>
+    {% endif %}
+</div>
+{% endif %}
+{% endblock %}

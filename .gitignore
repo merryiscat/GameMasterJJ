@@ -39,6 +39,10 @@ ENV/
 env.bak/
 venv.bak/
 .venv/
+gammaJJ/
+
+# ChromaDB 로컬 저장소
+chroma_db/
 
 # Database
 *.db
@@ -149,3 +153,8 @@ dmypy.json
 # Game-specific
 character_data/
 session_backups/
+
+# 크롤링 데이터 (용량 큼, git 추적 불필요)
+data/
+reference/archive/
+reference/checkpoint/

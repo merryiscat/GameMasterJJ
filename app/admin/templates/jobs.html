@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+{% set active_menu = "jobs" %}
+{% block title %}배치 관리 - GMJJ 어드민{% endblock %}
+
+{% block content %}
+<div class="flex justify-between items-center mb-6">
+    <h2 class="text-2xl font-bold text-gray-800">배치 관리</h2>
+</div>
+
+<!-- ========== 수동 실행 폼 ========== -->
+<div class="bg-white rounded-lg shadow p-6 mb-6">
+    <h3 class="text-lg font-semibold mb-4">수동 크롤링 실행</h3>
+    <form method="POST" action="/admin/jobs/run" class="flex items-end gap-4">
+        <div>
+            <label class="block text-sm text-gray-600 mb-1">소스 선택</label>
+            <select name="source_id" required
+                    class="border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400">
+                {% for s in sources %}
+                <option value="{{ s.id }}">{{ s.display_name or s.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div>
+            <label class="block text-sm text-gray-600 mb-1">실행 타입</label>
+            <select name="job_type"
+                    class="border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400">
+                <option value="manual">수동 (manual)</option>
+                <option value="new">신규 수집 (new)</option>
+                <option value="update">업데이트 (update)</option>
+            </select>
+        </div>
+        <button type="submit"
+                class="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700 transition">
+            실행
+        </button>
+    </form>
+</div>
+
+<!-- ========== 배치 이력 테이블 ========== -->
+<div class="bg-white rounded-lg shadow overflow-x-auto">
+    <table class="w-full text-sm">
+        <thead class="bg-gray-50">
+            <tr>
+                <th class="px-4 py-3 text-left text-gray-600">ID</th>
+                <th class="px-4 py-3 text-left text-gray-600">소스</th>
+                <th class="px-4 py-3 text-left text-gray-600">타입</th>
+                <th class="px-4 py-3 text-left text-gray-600">상태</th>
+                <th class="px-4 py-3 text-left text-gray-600">시작</th>
+                <th class="px-4 py-3 text-left text-gray-600">종료</th>
+                <th class="px-4 py-3 text-right text-gray-600">전체</th>
+                <th class="px-4 py-3 text-right text-gray-600">성공</th>
+                <th class="px-4 py-3 text-right text-gray-600">실패</th>
+                <th class="px-4 py-3 text-right text-gray-600">신규</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for job in jobs %}
+            <tr class="border-t hover:bg-gray-50">
+                <td class="px-4 py-3 text-gray-500">{{ job.id }}</td>
+                <td class="px-4 py-3">
+                    {{ job.crawl_sources.display_name if job.crawl_sources else "-" }}
+                </td>
+                <td class="px-4 py-3">{{ job.job_type }}</td>
+                <td class="px-4 py-3">
+                    {% if job.status == "completed" %}
+                        <span class="px-2 py-1 bg-green-100 text-green-700 rounded text-xs">완료</span>
+                    {% elif job.status == "running" %}
+                        <span class="px-2 py-1 bg-yellow-100 text-yellow-700 rounded text-xs">실행중</span>
+                    {% elif job.status == "failed" %}
+                        <span class="px-2 py-1 bg-red-100 text-red-700 rounded text-xs">실패</span>
+                    {% else %}
+                        <span class="px-2 py-1 bg-gray-100 text-gray-600 rounded text-xs">{{ job.status }}</span>
+                    {% endif %}
+                </td>
+                <td class="px-4 py-3 text-gray-500 text-xs">
+                    {{ job.started_at[:16] | replace("T", " ") if job.started_at else "-" }}
+                </td>
+                <td class="px-4 py-3 text-gray-500 text-xs">
+                    {{ job.finished_at[:16] | replace("T", " ") if job.finished_at else "-" }}
+                </td>
+                <td class="px-4 py-3 text-right">{{ job.total or 0 }}</td>
+                <td class="px-4 py-3 text-right text-green-600">{{ job.success or 0 }}</td>
+                <td class="px-4 py-3 text-right text-red-600">{{ job.fail or 0 }}</td>
+                <td class="px-4 py-3 text-right text-blue-600">{{ job.new_games or 0 }}</td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="10" class="px-4 py-8 text-center text-gray-400">
+                    배치 실행 이력이 없습니다.
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

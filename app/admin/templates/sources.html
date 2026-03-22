@@ -1,0 +1,120 @@
+{% extends "base.html" %}
+{% set active_menu = "sources" %}
+{% block title %}소스 관리 - GMJJ 어드민{% endblock %}
+
+{% block content %}
+<div class="flex justify-between items-center mb-6">
+    <h2 class="text-2xl font-bold text-gray-800">소스 관리</h2>
+    <button onclick="document.getElementById('addForm').classList.toggle('hidden')"
+            class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition">
+        + 소스 추가
+    </button>
+</div>
+
+<!-- ========== 소스 추가 폼 (기본 숨김) ========== -->
+<div id="addForm" class="hidden bg-white rounded-lg shadow p-6 mb-6">
+    <h3 class="text-lg font-semibold mb-4">새 소스 추가</h3>
+    <form method="POST" action="/admin/sources" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+            <label class="block text-sm text-gray-600 mb-1">소스 식별자 (영문)</label>
+            <input type="text" name="name" required placeholder="boardlife"
+                   class="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400">
+        </div>
+        <div>
+            <label class="block text-sm text-gray-600 mb-1">표시 이름</label>
+            <input type="text" name="display_name" placeholder="보드라이프"
+                   class="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400">
+        </div>
+        <div>
+            <label class="block text-sm text-gray-600 mb-1">기본 URL</label>
+            <input type="url" name="base_url" placeholder="https://boardlife.co.kr"
+                   class="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400">
+        </div>
+        <div>
+            <label class="block text-sm text-gray-600 mb-1">크롤링 방식</label>
+            <select name="crawl_type"
+                    class="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400">
+                <option value="scraping">스크래핑</option>
+                <option value="api">API</option>
+            </select>
+        </div>
+        <div>
+            <label class="block text-sm text-gray-600 mb-1">수집 주기</label>
+            <select name="schedule"
+                    class="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400">
+                <option value="daily">매일</option>
+                <option value="weekly" selected>매주</option>
+                <option value="monthly">매월</option>
+                <option value="quarterly">분기</option>
+                <option value="manual">수동</option>
+            </select>
+        </div>
+        <div class="flex items-end">
+            <button type="submit"
+                    class="bg-green-600 text-white px-6 py-2 rounded hover:bg-green-700 transition">
+                저장
+            </button>
+        </div>
+    </form>
+</div>
+
+<!-- ========== 소스 목록 테이블 ========== -->
+<div class="bg-white rounded-lg shadow overflow-x-auto">
+    <table class="w-full text-sm">
+        <thead class="bg-gray-50">
+            <tr>
+                <th class="px-4 py-3 text-left text-gray-600">ID</th>
+                <th class="px-4 py-3 text-left text-gray-600">이름</th>
+                <th class="px-4 py-3 text-left text-gray-600">URL</th>
+                <th class="px-4 py-3 text-left text-gray-600">방식</th>
+                <th class="px-4 py-3 text-left text-gray-600">주기</th>
+                <th class="px-4 py-3 text-left text-gray-600">마지막 크롤링</th>
+                <th class="px-4 py-3 text-left text-gray-600">게임 수</th>
+                <th class="px-4 py-3 text-center text-gray-600">상태</th>
+                <th class="px-4 py-3 text-center text-gray-600">액션</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for s in sources %}
+            <tr class="border-t hover:bg-gray-50">
+                <td class="px-4 py-3 text-gray-500">{{ s.id }}</td>
+                <td class="px-4 py-3 font-medium">{{ s.display_name or s.name }}</td>
+                <td class="px-4 py-3 text-gray-500 text-xs">{{ s.base_url or "-" }}</td>
+                <td class="px-4 py-3">{{ s.crawl_type }}</td>
+                <td class="px-4 py-3">{{ s.schedule }}</td>
+                <td class="px-4 py-3 text-gray-500 text-xs">
+                    {{ s.last_crawled_at[:16] | replace("T", " ") if s.last_crawled_at else "없음" }}
+                </td>
+                <td class="px-4 py-3">{{ s.total_games or 0 }}</td>
+                <td class="px-4 py-3 text-center">
+                    {% if s.is_active %}
+                        <span class="px-2 py-1 bg-green-100 text-green-700 rounded text-xs">활성</span>
+                    {% else %}
+                        <span class="px-2 py-1 bg-gray-200 text-gray-500 rounded text-xs">비활성</span>
+                    {% endif %}
+                </td>
+                <td class="px-4 py-3 text-center">
+                    <form method="POST" action="/admin/sources/{{ s.id }}/toggle" class="inline">
+                        <button type="submit"
+                                class="text-xs px-3 py-1 rounded border
+                                       {% if s.is_active %}
+                                           border-red-300 text-red-600 hover:bg-red-50
+                                       {% else %}
+                                           border-green-300 text-green-600 hover:bg-green-50
+                                       {% endif %}">
+                            {{ "비활성화" if s.is_active else "활성화" }}
+                        </button>
+                    </form>
+                </td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="9" class="px-4 py-8 text-center text-gray-400">
+                    등록된 소스가 없습니다.
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
