@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DB 테이블 뷰 - GMJJ</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', sans-serif; background: #0f0f23; color: #e0e0e0; min-height: 100vh; }
+        nav { background: #1a1a2e; padding: 1rem 2rem; display: flex; align-items: center; gap: 2rem; border-bottom: 2px solid #e94560; }
+        nav .logo { font-size: 1.5rem; font-weight: bold; color: #e94560; text-decoration: none; }
+        nav a { color: #aaa; text-decoration: none; font-size: 0.95rem; }
+        nav a:hover { color: #e94560; }
+        .container { max-width: 100%; margin: 0 auto; padding: 1rem 2rem; }
+
+        /* 헤더 */
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        .page-header h2 { color: #fff; font-size: 1.3rem; }
+        .page-header .info { color: #888; font-size: 0.85rem; }
+
+        /* 컨트롤 바 */
+        .controls {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+            background: #16213e;
+            padding: 1rem;
+            border-radius: 8px;
+        }
+        .controls label { color: #888; font-size: 0.85rem; }
+        .controls select, .controls input {
+            padding: 0.4rem 0.6rem;
+            border: 1px solid #333;
+            border-radius: 6px;
+            background: #0f0f23;
+            color: #fff;
+            font-size: 0.85rem;
+        }
+        .controls select { min-width: 100px; }
+        .controls input[type="text"] { min-width: 200px; }
+        .controls button {
+            padding: 0.4rem 1rem;
+            background: #e94560;
+            color: #fff;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.85rem;
+        }
+        .controls button:hover { background: #c73652; }
+
+        /* 컬럼 토글 */
+        .column-toggles {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+        .column-toggles label {
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+            font-size: 0.75rem;
+            color: #aaa;
+            cursor: pointer;
+            padding: 0.2rem 0.5rem;
+            background: #16213e;
+            border-radius: 4px;
+            border: 1px solid #333;
+        }
+        .column-toggles label:hover { border-color: #e94560; }
+        .column-toggles input[type="checkbox"] { accent-color: #e94560; }
+
+        /* 테이블 래퍼 (가로 스크롤) */
+        .table-wrapper {
+            overflow-x: auto;
+            border: 1px solid #222;
+            border-radius: 8px;
+        }
+
+        /* 테이블 */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.82rem;
+            white-space: nowrap;
+        }
+        thead {
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+        thead th {
+            background: #1a1a2e;
+            padding: 0.7rem 0.8rem;
+            text-align: left;
+            border-bottom: 2px solid #e94560;
+            color: #e94560;
+            font-weight: 600;
+            font-size: 0.8rem;
+            cursor: pointer;
+            user-select: none;
+        }
+        thead th:hover { background: #222244; }
+        thead th .sort-arrow { margin-left: 0.3rem; font-size: 0.7rem; }
+        tbody tr {
+            border-bottom: 1px solid #1a1a2e;
+            transition: background 0.1s;
+        }
+        tbody tr:nth-child(even) { background: rgba(22, 33, 62, 0.3); }
+        tbody tr:hover { background: #16213e; }
+        tbody td {
+            padding: 0.5rem 0.8rem;
+            max-width: 300px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        tbody td a { color: #58a6ff; text-decoration: none; }
+        tbody td a:hover { text-decoration: underline; }
+
+        /* 값 스타일 */
+        .val-rating { color: #ffd700; font-weight: bold; }
+        .val-weight { color: #aaa; }
+        .val-rank { color: #e94560; font-weight: bold; }
+        .val-players { color: #52b788; }
+        .val-year { color: #888; }
+        .val-owned { color: #b8b8b8; }
+        .val-flag-1 { color: #52b788; font-weight: bold; }
+        .val-flag-0 { color: #333; }
+        .val-mechanics { color: #aaa; font-size: 0.75rem; max-width: 400px; }
+        .val-themes { color: #aaa; font-size: 0.75rem; max-width: 300px; }
+        .val-image img { height: 40px; border-radius: 4px; }
+
+        /* 페이징 */
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 0.5rem;
+            margin-top: 1rem;
+            padding: 1rem;
+        }
+        .pagination a, .pagination span {
+            padding: 0.4rem 0.8rem;
+            border-radius: 6px;
+            text-decoration: none;
+            border: 1px solid #333;
+            color: #aaa;
+            font-size: 0.85rem;
+        }
+        .pagination a:hover { border-color: #e94560; color: #e94560; }
+        .pagination .active { border-color: #e94560; color: #e94560; background: #16213e; }
+        .pagination .disabled { opacity: 0.3; pointer-events: none; }
+
+        /* 통계 바 */
+        .stats-bar {
+            display: flex;
+            gap: 2rem;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+        }
+        .stats-bar .stat {
+            background: #16213e;
+            padding: 0.6rem 1.2rem;
+            border-radius: 8px;
+            border: 1px solid #222;
+        }
+        .stats-bar .stat .value { color: #e94560; font-weight: bold; font-size: 1.1rem; }
+        .stats-bar .stat .label { color: #888; font-size: 0.75rem; }
+    </style>
+</head>
+<body>
+    <nav>
+        <a class="logo" href="/">GMJJ</a>
+        <a href="/">홈</a>
+        <a href="/search">검색</a>
+        <a href="/browse">목록</a>
+        <a href="/table" style="color:#e94560;">DB 테이블</a>
+    </nav>
+
+    <div class="container">
+        <div class="page-header">
+            <h2>ChromaDB 테이블 뷰</h2>
+            <span class="info">총 {{ total_count }}개 | 페이지 {{ page }}/{{ total_pages }} | {{ per_page }}개씩 보기</span>
+        </div>
+
+        <!-- 통계 -->
+        <div class="stats-bar">
+            <div class="stat"><div class="value">{{ total_count }}</div><div class="label">전체 게임</div></div>
+            <div class="stat"><div class="value">{{ fields | length }}</div><div class="label">필드 수</div></div>
+            <div class="stat"><div class="value">boardgames</div><div class="label">컬렉션</div></div>
+            <div class="stat"><div class="value">cosine</div><div class="label">유사도 방식</div></div>
+        </div>
+
+        <!-- 필터/컨트롤 -->
+        <form action="/table" method="get">
+            <div class="controls">
+                <label>페이지당:</label>
+                <select name="per_page" onchange="this.form.submit()">
+                    <option value="20" {% if per_page == 20 %}selected{% endif %}>20</option>
+                    <option value="50" {% if per_page == 50 %}selected{% endif %}>50</option>
+                    <option value="100" {% if per_page == 100 %}selected{% endif %}>100</option>
+                    <option value="200" {% if per_page == 200 %}selected{% endif %}>200</option>
+                </select>
+
+                <label>이름 검색:</label>
+                <input type="text" name="name_filter" value="{{ name_filter }}" placeholder="게임 이름 입력..." />
+
+                <input type="hidden" name="page" value="1" />
+                <button type="submit">필터 적용</button>
+            </div>
+        </form>
+
+        <!-- 테이블 -->
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>ID</th>
+                        <th>게임명</th>
+                        <th>연도</th>
+                        <th>평점</th>
+                        <th>난이도</th>
+                        <th>BGG 랭킹</th>
+                        <th>인원</th>
+                        <th>시간(분)</th>
+                        <th>소유자</th>
+                        <th>전략</th>
+                        <th>가족</th>
+                        <th>파티</th>
+                        <th>테마틱</th>
+                        <th>워게임</th>
+                        <th>추상</th>
+                        <th>어린이</th>
+                        <th>메카니즘</th>
+                        <th>테마</th>
+                        <th>서브카테고리</th>
+                        <th>이미지</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for game in games %}
+                    <tr>
+                        <td>{{ offset + loop.index }}</td>
+                        <td>{{ game.bgg_id }}</td>
+                        <td><a href="/game/{{ game.bgg_id }}">{{ game.name }}</a></td>
+                        <td class="val-year">{{ game.year_published }}</td>
+                        <td class="val-rating">{{ game.avg_rating | round(2) }}</td>
+                        <td class="val-weight">{{ game.game_weight | round(2) }}</td>
+                        <td class="val-rank">
+                            {% if game.rank_boardgame and game.rank_boardgame < 21926 %}
+                            #{{ game.rank_boardgame }}
+                            {% else %}-{% endif %}
+                        </td>
+                        <td class="val-players">{{ game.min_players }}~{{ game.max_players }}</td>
+                        <td>{{ game.playtime }}</td>
+                        <td class="val-owned">{{ game.num_owned }}</td>
+                        <!-- 카테고리 플래그 -->
+                        <td class="{% if game.is_strategy == 1 %}val-flag-1{% else %}val-flag-0{% endif %}">{{ game.is_strategy }}</td>
+                        <td class="{% if game.is_family == 1 %}val-flag-1{% else %}val-flag-0{% endif %}">{{ game.is_family }}</td>
+                        <td class="{% if game.is_party == 1 %}val-flag-1{% else %}val-flag-0{% endif %}">{{ game.is_party }}</td>
+                        <td class="{% if game.is_thematic == 1 %}val-flag-1{% else %}val-flag-0{% endif %}">{{ game.is_thematic }}</td>
+                        <td class="{% if game.is_war == 1 %}val-flag-1{% else %}val-flag-0{% endif %}">{{ game.is_war }}</td>
+                        <td class="{% if game.is_abstract == 1 %}val-flag-1{% else %}val-flag-0{% endif %}">{{ game.is_abstract }}</td>
+                        <td class="{% if game.is_childrens == 1 %}val-flag-1{% else %}val-flag-0{% endif %}">{{ game.is_childrens }}</td>
+                        <!-- 텍스트 필드 -->
+                        <td class="val-mechanics" title="{{ game.mechanics }}">{{ game.mechanics[:80] }}{% if game.mechanics|length > 80 %}...{% endif %}</td>
+                        <td class="val-themes" title="{{ game.themes }}">{{ game.themes[:60] }}{% if game.themes|length > 60 %}...{% endif %}</td>
+                        <td>{{ game.subcategories }}</td>
+                        <td class="val-image">
+                            {% if game.image_url and game.image_url != 'nan' and game.image_url != '' %}
+                            <img src="{{ game.image_url }}" alt="" onerror="this.style.display='none'" loading="lazy" />
+                            {% else %}-{% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- 페이징 -->
+        <div class="pagination">
+            <a href="/table?page=1&per_page={{ per_page }}&name_filter={{ name_filter }}"
+               class="{% if page <= 1 %}disabled{% endif %}">처음</a>
+            <a href="/table?page={{ page - 1 }}&per_page={{ per_page }}&name_filter={{ name_filter }}"
+               class="{% if page <= 1 %}disabled{% endif %}">이전</a>
+
+            {% for p in range([1, page - 3] | max, [page + 4, total_pages + 1] | min) %}
+            <a href="/table?page={{ p }}&per_page={{ per_page }}&name_filter={{ name_filter }}"
+               class="{% if p == page %}active{% endif %}">{{ p }}</a>
+            {% endfor %}
+
+            <a href="/table?page={{ page + 1 }}&per_page={{ per_page }}&name_filter={{ name_filter }}"
+               class="{% if page >= total_pages %}disabled{% endif %}">다음</a>
+            <a href="/table?page={{ total_pages }}&per_page={{ per_page }}&name_filter={{ name_filter }}"
+               class="{% if page >= total_pages %}disabled{% endif %}">마지막</a>
+        </div>
+    </div>
+</body>
+</html>

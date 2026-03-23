@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>검색 결과 - GMJJ</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', sans-serif; background: #0f0f23; color: #e0e0e0; min-height: 100vh; }
+        nav { background: #1a1a2e; padding: 1rem 2rem; display: flex; align-items: center; gap: 2rem; border-bottom: 2px solid #e94560; }
+        nav .logo { font-size: 1.5rem; font-weight: bold; color: #e94560; text-decoration: none; }
+        nav a { color: #aaa; text-decoration: none; font-size: 0.95rem; }
+        nav a:hover { color: #e94560; }
+        .container { max-width: 1200px; margin: 0 auto; padding: 2rem; }
+
+        /* 검색 폼 */
+        .search-form {
+            background: #16213e;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        .search-row {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+        .search-row input[type="text"] {
+            flex: 1;
+            padding: 0.8rem 1.2rem;
+            border: 2px solid #333;
+            border-radius: 8px;
+            background: #0f0f23;
+            color: #fff;
+            font-size: 1rem;
+            outline: none;
+        }
+        .search-row input[type="text"]:focus { border-color: #e94560; }
+        .search-row button {
+            padding: 0.8rem 1.5rem;
+            background: #e94560;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+        .search-row button:hover { background: #c73652; }
+
+        /* 필터 행 */
+        .filter-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            align-items: center;
+        }
+        .filter-group { display: flex; align-items: center; gap: 0.4rem; }
+        .filter-group label { font-size: 0.85rem; color: #888; }
+        .filter-group input, .filter-group select {
+            padding: 0.4rem 0.6rem;
+            border: 1px solid #333;
+            border-radius: 6px;
+            background: #0f0f23;
+            color: #fff;
+            font-size: 0.85rem;
+            width: 80px;
+        }
+        .filter-group select { width: 120px; }
+
+        /* 결과 헤더 */
+        .result-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            color: #888;
+        }
+        .result-header .count { color: #e94560; font-weight: bold; }
+
+        /* 결과 리스트 */
+        .result-list { display: flex; flex-direction: column; gap: 0.8rem; }
+        .result-item {
+            display: grid;
+            grid-template-columns: 60px 1fr auto;
+            gap: 1.2rem;
+            background: #16213e;
+            border-radius: 10px;
+            padding: 1.2rem;
+            border: 1px solid #222;
+            transition: all 0.2s;
+            text-decoration: none;
+            color: inherit;
+            align-items: center;
+        }
+        .result-item:hover { border-color: #e94560; }
+
+        .similarity-badge {
+            width: 55px;
+            height: 55px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 0.85rem;
+        }
+        .sim-high { background: #1b4332; color: #52b788; border: 2px solid #52b788; }
+        .sim-mid { background: #3a2e15; color: #f4a261; border: 2px solid #f4a261; }
+        .sim-low { background: #3a1520; color: #e76f51; border: 2px solid #e76f51; }
+
+        .result-info .name { font-size: 1.1rem; color: #fff; font-weight: 600; }
+        .result-info .meta {
+            display: flex;
+            gap: 1rem;
+            font-size: 0.8rem;
+            color: #888;
+            margin: 0.3rem 0;
+        }
+        .result-info .tags { display: flex; flex-wrap: wrap; gap: 0.3rem; }
+        .result-info .tag {
+            font-size: 0.7rem;
+            padding: 0.15rem 0.5rem;
+            background: #0f0f23;
+            border-radius: 4px;
+            color: #aaa;
+        }
+
+        .result-stats { text-align: right; font-size: 0.85rem; }
+        .result-stats .rating { color: #ffd700; font-size: 1.1rem; font-weight: bold; }
+        .result-stats .detail { color: #666; font-size: 0.75rem; }
+
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            color: #555;
+        }
+        .empty-state .icon { font-size: 3rem; margin-bottom: 1rem; }
+    </style>
+</head>
+<body>
+    <nav>
+        <a class="logo" href="/">GMJJ</a>
+        <a href="/">홈</a>
+        <a href="/browse">전체 목록</a>
+    </nav>
+
+    <div class="container">
+        <!-- 검색 폼 -->
+        <div class="search-form">
+            <form action="/search" method="get">
+                <div class="search-row">
+                    <input type="text" name="q" value="{{ query }}" placeholder="어떤 게임을 찾고 있나요?" />
+                    <button type="submit">검색</button>
+                </div>
+                <div class="filter-row">
+                    <div class="filter-group">
+                        <label>최소 인원:</label>
+                        <input type="number" name="min_players" value="{{ min_players }}" min="0" max="20" />
+                    </div>
+                    <div class="filter-group">
+                        <label>최대 난이도:</label>
+                        <input type="number" name="max_weight" value="{{ max_weight }}" min="1" max="5" step="0.5" />
+                    </div>
+                    <div class="filter-group">
+                        <label>최소 평점:</label>
+                        <input type="number" name="min_rating" value="{{ min_rating }}" min="0" max="10" step="0.5" />
+                    </div>
+                    <div class="filter-group">
+                        <label>카테고리:</label>
+                        <select name="category">
+                            <option value="all" {% if category == 'all' %}selected{% endif %}>전체</option>
+                            <option value="strategy" {% if category == 'strategy' %}selected{% endif %}>전략</option>
+                            <option value="family" {% if category == 'family' %}selected{% endif %}>가족</option>
+                            <option value="party" {% if category == 'party' %}selected{% endif %}>파티</option>
+                            <option value="thematic" {% if category == 'thematic' %}selected{% endif %}>테마틱</option>
+                            <option value="war" {% if category == 'war' %}selected{% endif %}>워게임</option>
+                            <option value="abstract" {% if category == 'abstract' %}selected{% endif %}>추상</option>
+                            <option value="childrens" {% if category == 'childrens' %}selected{% endif %}>어린이</option>
+                        </select>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <!-- 결과 -->
+        {% if query %}
+        <div class="result-header">
+            <span>"<strong>{{ query }}</strong>" 검색 결과</span>
+            <span class="count">{{ result_count }}개</span>
+        </div>
+
+        <div class="result-list">
+            {% for game in games %}
+            <a class="result-item" href="/game/{{ game.bgg_id }}">
+                <!-- 유사도 뱃지 -->
+                <div class="similarity-badge {% if game.similarity >= 60 %}sim-high{% elif game.similarity >= 40 %}sim-mid{% else %}sim-low{% endif %}">
+                    {{ game.similarity }}%
+                </div>
+
+                <!-- 게임 정보 -->
+                <div class="result-info">
+                    <div class="name">{{ game.name }} ({{ game.year_published }})</div>
+                    <div class="meta">
+                        <span>{{ game.min_players }}~{{ game.max_players }}명</span>
+                        <span>{{ game.playtime }}분</span>
+                        <span>난이도 {{ game.game_weight | round(1) }}</span>
+                        {% if game.rank_boardgame and game.rank_boardgame < 21926 %}
+                        <span>BGG #{{ game.rank_boardgame }}</span>
+                        {% endif %}
+                    </div>
+                    {% if game.mechanics %}
+                    <div class="tags">
+                        {% for mech in game.mechanics.split(', ')[:6] %}
+                        <span class="tag">{{ mech }}</span>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                </div>
+
+                <!-- 평점 -->
+                <div class="result-stats">
+                    <div class="rating">{{ game.avg_rating | round(1) }}</div>
+                    <div class="detail">{{ game.num_owned }} owned</div>
+                </div>
+            </a>
+            {% endfor %}
+        </div>
+
+        {% if not games %}
+        <div class="empty-state">
+            <div class="icon">🔍</div>
+            <p>검색 결과가 없습니다. 다른 키워드로 시도해보세요.</p>
+        </div>
+        {% endif %}
+
+        {% else %}
+        <div class="empty-state">
+            <div class="icon">🎲</div>
+            <p>검색어를 입력하면 AI가 유사한 보드게임을 찾아줍니다.</p>
+        </div>
+        {% endif %}
+    </div>
+</body>
+</html>

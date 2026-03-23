@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>전체 목록 - GMJJ</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', sans-serif; background: #0f0f23; color: #e0e0e0; min-height: 100vh; }
+        nav { background: #1a1a2e; padding: 1rem 2rem; display: flex; align-items: center; gap: 2rem; border-bottom: 2px solid #e94560; }
+        nav .logo { font-size: 1.5rem; font-weight: bold; color: #e94560; text-decoration: none; }
+        nav a { color: #aaa; text-decoration: none; font-size: 0.95rem; }
+        nav a:hover { color: #e94560; }
+        .container { max-width: 1200px; margin: 0 auto; padding: 2rem; }
+
+        /* 헤더 */
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+        .page-header h2 { color: #fff; }
+        .page-header .info { color: #888; font-size: 0.9rem; }
+
+        /* 정렬 */
+        .sort-bar {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
+        }
+        .sort-bar a {
+            padding: 0.4rem 1rem;
+            border-radius: 6px;
+            text-decoration: none;
+            font-size: 0.85rem;
+            border: 1px solid #333;
+            color: #aaa;
+        }
+        .sort-bar a.active { border-color: #e94560; color: #e94560; background: #16213e; }
+        .sort-bar a:hover { border-color: #e94560; }
+
+        /* 테이블 */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        thead th {
+            text-align: left;
+            padding: 0.8rem;
+            border-bottom: 2px solid #333;
+            color: #888;
+            font-size: 0.85rem;
+            font-weight: normal;
+        }
+        tbody tr {
+            border-bottom: 1px solid #1a1a2e;
+            transition: background 0.15s;
+        }
+        tbody tr:hover { background: #16213e; }
+        tbody td {
+            padding: 0.8rem;
+            font-size: 0.9rem;
+        }
+        tbody td a {
+            color: #fff;
+            text-decoration: none;
+            font-weight: 500;
+        }
+        tbody td a:hover { color: #e94560; }
+        .rating-cell { color: #ffd700; font-weight: bold; }
+        .weight-cell { color: #aaa; }
+        .rank-cell { color: #e94560; font-weight: bold; }
+
+        /* 페이징 */
+        .pagination {
+            display: flex;
+            justify-content: center;
+            gap: 0.5rem;
+            margin-top: 2rem;
+        }
+        .pagination a {
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            text-decoration: none;
+            border: 1px solid #333;
+            color: #aaa;
+            font-size: 0.9rem;
+        }
+        .pagination a.active { border-color: #e94560; color: #e94560; background: #16213e; }
+        .pagination a:hover { border-color: #e94560; }
+        .pagination .disabled { opacity: 0.3; pointer-events: none; }
+    </style>
+</head>
+<body>
+    <nav>
+        <a class="logo" href="/">GMJJ</a>
+        <a href="/">홈</a>
+        <a href="/search">검색</a>
+        <a href="/browse">전체 목록</a>
+    </nav>
+
+    <div class="container">
+        <div class="page-header">
+            <h2>전체 보드게임 목록</h2>
+            <span class="info">총 {{ total_count }}개 | 페이지 {{ page }}/{{ total_pages }}</span>
+        </div>
+
+        <div class="sort-bar">
+            <a href="/browse?page={{ page }}&sort_by=rank" class="{% if sort_by == 'rank' %}active{% endif %}">랭킹순</a>
+            <a href="/browse?page={{ page }}&sort_by=rating" class="{% if sort_by == 'rating' %}active{% endif %}">평점순</a>
+            <a href="/browse?page={{ page }}&sort_by=weight" class="{% if sort_by == 'weight' %}active{% endif %}">난이도순</a>
+            <a href="/browse?page={{ page }}&sort_by=name" class="{% if sort_by == 'name' %}active{% endif %}">이름순</a>
+        </div>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>랭킹</th>
+                    <th>게임명</th>
+                    <th>연도</th>
+                    <th>평점</th>
+                    <th>난이도</th>
+                    <th>인원</th>
+                    <th>시간</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for game in games %}
+                <tr>
+                    <td class="rank-cell">
+                        {% if game.rank_boardgame and game.rank_boardgame < 21926 %}
+                        #{{ game.rank_boardgame }}
+                        {% else %}
+                        -
+                        {% endif %}
+                    </td>
+                    <td><a href="/game/{{ game.bgg_id }}">{{ game.name }}</a></td>
+                    <td>{{ game.year_published }}</td>
+                    <td class="rating-cell">{{ game.avg_rating | round(1) }}</td>
+                    <td class="weight-cell">{{ game.game_weight | round(1) }}</td>
+                    <td>{{ game.min_players }}~{{ game.max_players }}</td>
+                    <td>{{ game.playtime }}분</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <!-- 페이징 -->
+        <div class="pagination">
+            <a href="/browse?page=1&sort_by={{ sort_by }}" class="{% if page <= 1 %}disabled{% endif %}">처음</a>
+            <a href="/browse?page={{ page - 1 }}&sort_by={{ sort_by }}" class="{% if page <= 1 %}disabled{% endif %}">이전</a>
+
+            {% for p in range([1, page - 3] | max, [page + 4, total_pages + 1] | min) %}
+            <a href="/browse?page={{ p }}&sort_by={{ sort_by }}" class="{% if p == page %}active{% endif %}">{{ p }}</a>
+            {% endfor %}
+
+            <a href="/browse?page={{ page + 1 }}&sort_by={{ sort_by }}" class="{% if page >= total_pages %}disabled{% endif %}">다음</a>
+            <a href="/browse?page={{ total_pages }}&sort_by={{ sort_by }}" class="{% if page >= total_pages %}disabled{% endif %}">마지막</a>
+        </div>
+    </div>
+</body>
+</html>
