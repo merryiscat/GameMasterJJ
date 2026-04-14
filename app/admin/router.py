@@ -259,6 +259,95 @@ async def game_update(
 
 
 # ============================================================
+# ChromaDB 검색 테스트
+# ============================================================
+@router.get("/search-test", response_class=HTMLResponse)
+async def search_test(
+    request: Request,
+    q: str = "",
+    n: int = 5,
+    type: str = "all",
+    game: str = "all",
+):
+    """ChromaDB 벡터 검색 테스트 페이지"""
+    import time as _time
+    results = []
+    elapsed = 0
+    total_chunks = 0
+    playbook_results = []
+    playbook_game_name = ""
+
+    # 검색 가능한 게임 목록 (필터용)
+    games_list = []
+    try:
+        rule_games = service.get_client().table("game_rules").select(
+            "game_id, games(name_ko)"
+        ).execute()
+        for r in rule_games.data:
+            g = r.get("games", {})
+            if g:
+                games_list.append({"id": r["game_id"], "name": g.get("name_ko", "")})
+    except Exception:
+        pass
+
+    if q.strip():
+        try:
+            from app.admin.search_service import search_chromadb, get_playbook
+
+            start = _time.time()
+            game_id_filter = int(game) if game != "all" else None
+            type_filter = type if type != "all" else None
+
+            results = search_chromadb(
+                query=q,
+                n_results=n,
+                chunk_type=type_filter,
+                game_id=game_id_filter,
+            )
+            elapsed = int((_time.time() - start) * 1000)
+
+            # 전체 청크 수
+            from app.admin.search_service import get_collection_count
+            total_chunks = get_collection_count()
+
+            # 첫 번째 결과의 게임에 대해 플레이북 미리보기
+            if results and game_id_filter:
+                playbook_results, playbook_game_name = get_playbook(game_id_filter)
+
+        except Exception as e:
+            return templates.TemplateResponse("search_test.html", {
+                "request": request,
+                "active_menu": "search_test",
+                "query": q,
+                "n_results": n,
+                "chunk_type": type,
+                "game_filter": game,
+                "games": games_list,
+                "results": [],
+                "elapsed": 0,
+                "total_chunks": 0,
+                "playbook_results": [],
+                "playbook_game_name": "",
+                "error": str(e),
+            })
+
+    return templates.TemplateResponse("search_test.html", {
+        "request": request,
+        "active_menu": "search_test",
+        "query": q,
+        "n_results": n,
+        "chunk_type": type,
+        "game_filter": game,
+        "games": games_list,
+        "results": results,
+        "elapsed": elapsed,
+        "total_chunks": total_chunks,
+        "playbook_results": playbook_results,
+        "playbook_game_name": playbook_game_name,
+    })
+
+
+# ============================================================
 # 유틸리티
 # ============================================================
 def _build_game_data(

@@ -1,0 +1,130 @@
+{% extends "base.html" %}
+{% block title %}ChromaDB 검색 테스트 - GMJJ 어드민{% endblock %}
+
+{% block content %}
+<h2 class="text-2xl font-bold mb-6">ChromaDB 검색 테스트</h2>
+
+<!-- 검색 폼 -->
+<div class="bg-white rounded-lg shadow p-6 mb-6">
+    <form method="get" action="/admin/search-test" class="space-y-4">
+        <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">검색 쿼리</label>
+            <input type="text" name="q" value="{{ query }}"
+                   placeholder="예: 윙스펜 3인 세팅 방법, 뱅에서 보안관이 죽으면?"
+                   class="w-full border border-gray-300 rounded-lg px-4 py-3 text-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                   autofocus>
+        </div>
+        <div class="flex items-center gap-4">
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">결과 수</label>
+                <select name="n" class="border border-gray-300 rounded px-3 py-2">
+                    <option value="5" {{ 'selected' if n_results == 5 }}>5개</option>
+                    <option value="10" {{ 'selected' if n_results == 10 }}>10개</option>
+                    <option value="20" {{ 'selected' if n_results == 20 }}>20개</option>
+                </select>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">타입 필터</label>
+                <select name="type" class="border border-gray-300 rounded px-3 py-2">
+                    <option value="all" {{ 'selected' if chunk_type == 'all' }}>전체</option>
+                    <option value="section" {{ 'selected' if chunk_type == 'section' }}>섹션만</option>
+                    <option value="qa" {{ 'selected' if chunk_type == 'qa' }}>QA만</option>
+                </select>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">게임 필터</label>
+                <select name="game" class="border border-gray-300 rounded px-3 py-2">
+                    <option value="all" {{ 'selected' if game_filter == 'all' }}>전체</option>
+                    {% for g in games %}
+                    <option value="{{ g.id }}" {{ 'selected' if game_filter == g.id|string }}>{{ g.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="pt-5">
+                <button type="submit"
+                        class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition">
+                    검색
+                </button>
+            </div>
+        </div>
+    </form>
+</div>
+
+<!-- 검색 결과 -->
+{% if query %}
+<div class="bg-white rounded-lg shadow p-6">
+    <div class="flex items-center justify-between mb-4">
+        <h3 class="text-lg font-semibold">
+            검색 결과 <span class="text-gray-500 text-sm">({{ results|length }}건, {{ elapsed }}ms)</span>
+        </h3>
+        <span class="text-sm text-gray-500">컬렉션 전체: {{ total_chunks }}청크</span>
+    </div>
+
+    {% if results %}
+    <div class="space-y-4">
+        {% for r in results %}
+        <div class="border rounded-lg p-4 hover:bg-gray-50 transition">
+            <div class="flex items-center gap-2 mb-2">
+                <!-- 순위 -->
+                <span class="bg-gray-200 text-gray-700 text-xs font-bold px-2 py-1 rounded">{{ loop.index }}</span>
+                <!-- 게임 이름 -->
+                <span class="bg-blue-100 text-blue-800 text-xs font-medium px-2 py-1 rounded">{{ r.game_name }}</span>
+                <!-- 섹션 -->
+                <span class="bg-green-100 text-green-800 text-xs font-medium px-2 py-1 rounded">{{ r.section }}</span>
+                <!-- 타입 -->
+                {% if r.chunk_type == 'qa' %}
+                <span class="bg-purple-100 text-purple-800 text-xs font-medium px-2 py-1 rounded">QA</span>
+                {% else %}
+                <span class="bg-yellow-100 text-yellow-800 text-xs font-medium px-2 py-1 rounded">섹션</span>
+                {% endif %}
+                <!-- sub_section -->
+                {% if r.sub_section %}
+                <span class="bg-gray-100 text-gray-600 text-xs px-2 py-1 rounded">{{ r.sub_section }}</span>
+                {% endif %}
+                <!-- 유사도 -->
+                <span class="ml-auto text-sm font-mono {{ 'text-green-600' if r.similarity > 0.5 else 'text-orange-500' if r.similarity > 0.3 else 'text-red-500' }}">
+                    sim={{ "%.3f"|format(r.similarity) }}
+                </span>
+            </div>
+            <!-- 본문 -->
+            <div class="text-sm text-gray-700 whitespace-pre-wrap leading-relaxed">{{ r.document }}</div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <p class="text-gray-500">검색 결과가 없습니다.</p>
+    {% endif %}
+</div>
+{% endif %}
+
+<!-- 플레이북 미리보기 -->
+{% if playbook_results %}
+<div class="bg-white rounded-lg shadow p-6 mt-6">
+    <h3 class="text-lg font-semibold mb-4">
+        플레이북 미리보기
+        <span class="text-gray-500 text-sm">({{ playbook_game_name }})</span>
+    </h3>
+    <div class="space-y-3">
+        {% for step in playbook_results %}
+        <div class="border-l-4 border-blue-500 pl-4 py-2">
+            <div class="flex items-center gap-2 mb-1">
+                <span class="bg-blue-600 text-white text-xs font-bold px-2 py-1 rounded">{{ step.step_order }}</span>
+                <span class="bg-gray-100 text-gray-600 text-xs px-2 py-1 rounded">{{ step.phase }}</span>
+                <span class="font-medium">{{ step.title }}</span>
+            </div>
+            <div class="text-sm text-gray-700 whitespace-pre-wrap">{{ step.content[:300] }}{% if step.content|length > 300 %}...{% endif %}</div>
+            {% if step.player_variants %}
+            <div class="mt-2 text-xs text-gray-500">
+                인원별:
+                {% for k, v in step.player_variants.items() %}
+                <span class="bg-gray-100 px-1 rounded">{{ k }}: {{ v[:50] }}</span>
+                {% endfor %}
+            </div>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
+{% endblock %}

@@ -1,16 +1,19 @@
 """
-게임 커버 이미지 다운로드 스크립트
+게임 이미지 다운로드 스크립트
 
 game_images 테이블에서 source_url이 있고 local_path가 없는 이미지를 다운로드.
-추후 배치 크롤링에 통합하여 신규 게임 이미지도 자동 수집.
+cover와 thumbnail 모두 처리합니다.
 
 사용법:
     uv run python scripts/download_images.py              # 전체 다운로드
     uv run python scripts/download_images.py --limit 100   # 100개만 테스트
-    uv run python scripts/download_images.py --resume      # 미다운로드분만
+    uv run python scripts/download_images.py --type cover  # cover만
+    uv run python scripts/download_images.py --type thumb  # thumbnail만
 
-결과물: data/images/cover/game_{id}.jpg
-DB 업데이트: game_images.local_path = /static/images/cover/game_{id}.jpg
+결과물:
+    data/images/cover/game_{id}.jpg
+    data/images/thumb/game_{id}.jpg
+DB 업데이트: game_images.local_path = /static/images/{type}/game_{id}.jpg
 """
 
 import asyncio
@@ -29,10 +32,10 @@ load_dotenv()
 # 경로 설정
 # ============================================================
 PROJECT_ROOT = Path(__file__).parent.parent
-IMAGES_DIR = PROJECT_ROOT / "data" / "images" / "cover"
+IMAGES_BASE = PROJECT_ROOT / "data" / "images"
 
-# FastAPI static 서빙 기준 경로
-STATIC_PREFIX = "/static/images/cover"
+# 이미지 타입별 디렉토리 매핑
+TYPE_MAP = {"cover": "cover", "thumbnail": "thumb"}
 
 # 동시 다운로드 수
 MAX_CONCURRENT = 10
@@ -54,17 +57,19 @@ def get_supabase():
 # ============================================================
 # 미다운로드 이미지 목록 조회
 # ============================================================
-def get_pending_images(sb, limit: int = 0) -> list[dict]:
+def get_pending_images(sb, limit: int = 0, image_type: str = "") -> list[dict]:
     """
-    local_path가 없는 cover 이미지 목록 조회
-    추후 배치에서도 이 함수를 호출하면 신규 이미지만 가져옴
+    local_path가 없는 이미지 목록 조회 (cover + thumbnail)
+    image_type을 지정하면 해당 타입만 조회
     """
     query = (
         sb.table("game_images")
-        .select("id, game_id, source_url")
-        .eq("image_type", "cover")
+        .select("id, game_id, image_type, source_url")
         .is_("local_path", "null")
     )
+
+    if image_type:
+        query = query.eq("image_type", image_type)
 
     if limit:
         query = query.limit(limit)
@@ -96,7 +101,9 @@ async def download_images(images: list[dict]):
     """
     이미지 목록을 비동기로 다운로드 + DB 업데이트
     """
-    IMAGES_DIR.mkdir(parents=True, exist_ok=True)
+    # 타입별 디렉토리 생성
+    for subdir in TYPE_MAP.values():
+        (IMAGES_BASE / subdir).mkdir(parents=True, exist_ok=True)
     sb = get_supabase()
 
     total = len(images)
@@ -106,7 +113,7 @@ async def download_images(images: list[dict]):
 
     print(f"\n{'=' * 60}")
     print(f"이미지 다운로드 시작 ({total}개)")
-    print(f"저장 경로: {IMAGES_DIR}")
+    print(f"저장 경로: {IMAGES_BASE}")
     print(f"동시 요청: {MAX_CONCURRENT}개")
     print(f"{'=' * 60}")
 
@@ -118,17 +125,23 @@ async def download_images(images: list[dict]):
             game_id = img["game_id"]
             source_url = img["source_url"]
             img_id = img["id"]
+            img_type = img.get("image_type", "cover")
 
             if not source_url:
                 return False
+
+            # 타입별 디렉토리
+            subdir = TYPE_MAP.get(img_type, "cover")
+            images_dir = IMAGES_BASE / subdir
+            images_dir.mkdir(parents=True, exist_ok=True)
 
             # 파일명: game_{id}.jpg
             ext = source_url.split(".")[-1].split("?")[0][:4]
             if ext not in ("jpg", "jpeg", "png", "webp", "gif"):
                 ext = "jpg"
             filename = f"game_{game_id}.{ext}"
-            filepath = IMAGES_DIR / filename
-            static_path = f"{STATIC_PREFIX}/{filename}"
+            filepath = images_dir / filename
+            static_path = f"/static/images/{subdir}/{filename}"
 
             # 이미 파일이 있으면 DB만 업데이트
             if filepath.exists():
@@ -181,7 +194,7 @@ async def download_images(images: list[dict]):
             pct = (done / total) * 100
             bar_width = 25
             filled = int(bar_width * done / total)
-            bar = "█" * filled + "░" * (bar_width - filled)
+            bar = "#" * filled + "-" * (bar_width - filled)
 
             if done > 0:
                 eta = (elapsed / done) * (total - done) / 60
@@ -198,7 +211,7 @@ async def download_images(images: list[dict]):
     print(f"   성공: {success}개")
     print(f"   실패: {fail}개")
     print(f"   소요: {elapsed / 60:.1f}분")
-    print(f"   경로: {IMAGES_DIR}")
+    print(f"   경로: {IMAGES_BASE}")
     print(f"{'=' * 60}")
 
 
@@ -207,21 +220,25 @@ async def download_images(images: list[dict]):
 # ============================================================
 def main():
     limit = 0
+    image_type = ""
     for i, arg in enumerate(sys.argv):
         if arg == "--limit" and i + 1 < len(sys.argv):
             limit = int(sys.argv[i + 1])
-
-    # --resume는 기본 동작 (local_path가 null인 것만 가져오므로)
+        if arg == "--type" and i + 1 < len(sys.argv):
+            t = sys.argv[i + 1]
+            # thumb → thumbnail 매핑
+            image_type = "thumbnail" if t == "thumb" else t
 
     sb = get_supabase()
 
+    type_label = image_type or "cover + thumbnail"
     print("=" * 60)
-    print("게임 커버 이미지 다운로드")
+    print(f"게임 이미지 다운로드 ({type_label})")
     print("=" * 60)
 
     # 미다운로드 이미지 조회
     print("\n   미다운로드 이미지 조회 중...")
-    images = get_pending_images(sb, limit=limit)
+    images = get_pending_images(sb, limit=limit, image_type=image_type)
     print(f"   대상: {len(images)}개")
 
     if not images:

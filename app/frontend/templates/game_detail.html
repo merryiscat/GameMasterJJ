@@ -1,0 +1,269 @@
+{% extends "base.html" %}
+{% block title %}{{ game.name_ko }} - GMJJ{% endblock %}
+
+{% block extra_style %}
+/* ── 뒤로가기 헤더 ── */
+.detail-header {
+    display: flex;
+    align-items: center;
+    padding: 12px 16px;
+    background: var(--bg-secondary);
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    z-index: 50;
+}
+.back-btn {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    color: var(--teal-light);
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 500;
+}
+.back-btn svg {
+    width: 20px;
+    height: 20px;
+    fill: var(--teal-light);
+}
+
+/* ── 커버 이미지 ── */
+.cover-area {
+    width: 100%;
+    height: 220px;
+    background: linear-gradient(135deg, var(--emerald-deep) 0%, var(--cyan) 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+.cover-area img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+.cover-placeholder svg {
+    width: 64px;
+    height: 64px;
+    fill: rgba(255,255,255,0.15);
+}
+
+/* ── 게임 정보 ── */
+.detail-body {
+    padding: 20px 16px;
+}
+.detail-title {
+    font-family: 'Jua', sans-serif;
+    font-size: 26px;
+    color: var(--text-primary);
+    margin-bottom: 4px;
+}
+.detail-subtitle {
+    font-size: 14px;
+    color: var(--text-muted);
+    margin-bottom: 16px;
+}
+
+/* 메타 정보 그리드 */
+.meta-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin-bottom: 20px;
+}
+.meta-item {
+    background: var(--bg-card);
+    border-radius: 10px;
+    padding: 14px;
+    text-align: center;
+    border: 1px solid var(--border);
+}
+.meta-item .value {
+    font-family: 'Jua', sans-serif;
+    font-size: 20px;
+    color: var(--teal-light);
+    margin-bottom: 2px;
+}
+.meta-item .label {
+    font-size: 11px;
+    color: var(--text-muted);
+}
+
+/* 설명 */
+.detail-section {
+    margin-bottom: 20px;
+}
+.detail-section h3 {
+    font-family: 'Jua', sans-serif;
+    font-size: 16px;
+    color: var(--text-primary);
+    margin-bottom: 8px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid var(--border);
+}
+.detail-section p {
+    font-size: 14px;
+    line-height: 1.7;
+    color: var(--text-secondary);
+}
+
+/* 태그 */
+.tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+.tag {
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    background: rgba(13,148,136,0.12);
+    color: var(--teal-light);
+    border: 1px solid rgba(13,148,136,0.2);
+}
+
+/* 플레이 버튼 */
+.play-btn {
+    display: block;
+    width: 100%;
+    padding: 16px;
+    border-radius: 14px;
+    border: none;
+    background: linear-gradient(135deg, var(--emerald-deep) 0%, var(--teal) 100%);
+    color: #CCFBF1;
+    font-family: 'Jua', sans-serif;
+    font-size: 18px;
+    letter-spacing: 2px;
+    cursor: pointer;
+    text-align: center;
+    text-decoration: none;
+    transition: all 0.2s;
+    margin-top: 24px;
+}
+.play-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(6,95,70,0.3);
+}
+{% endblock %}
+
+{% block content %}
+<!-- 헤더 -->
+<div class="detail-header">
+    <a href="{% if from_page == 'mygame' %}/mygame{% else %}/games{% endif %}" class="back-btn">
+        <svg viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
+        {% if from_page == 'mygame' %}Mygame{% else %}목록으로{% endif %}
+    </a>
+</div>
+
+<!-- 커버 이미지 -->
+<div class="cover-area">
+    {% if game.cover_url or game.thumb_url %}
+    <img src="{{ game.cover_url or game.thumb_url }}" alt="{{ game.name_ko }}">
+    {% else %}
+    <div class="cover-placeholder">
+        <svg viewBox="0 0 24 24"><path d="M21 6H3c-1.1 0-2 .9-2 2v8c0 1.1.9 2 2 2h18c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm-10 7H8v3H6v-3H3v-2h3V8h2v3h3v2zm4.5 2c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm4-3c-.83 0-1.5-.67-1.5-1.5S18.67 9 19.5 9s1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/></svg>
+    </div>
+    {% endif %}
+</div>
+
+<!-- 본문 -->
+<div class="detail-body">
+    <h1 class="detail-title">{{ game.name_ko }}</h1>
+    {% if game.name_en %}
+    <div class="detail-subtitle">{{ game.name_en }}</div>
+    {% endif %}
+
+    <!-- 메타 정보 -->
+    <div class="meta-grid">
+        <div class="meta-item">
+            <div class="value">
+                {% if game.min_players %}
+                    {{ game.min_players }}{% if game.max_players and game.max_players != game.min_players %}~{{ game.max_players }}{% endif %}
+                {% else %}-{% endif %}
+            </div>
+            <div class="label">인원</div>
+        </div>
+        <div class="meta-item">
+            <div class="value">{{ game.playtime or '-' }}</div>
+            <div class="label">시간(분)</div>
+        </div>
+        <div class="meta-item">
+            <div class="value">
+                {% if game.rating %}{{ "%.1f"|format(game.rating) }}{% else %}-{% endif %}
+            </div>
+            <div class="label">평점</div>
+        </div>
+    </div>
+
+    <!-- 한줄 소개 -->
+    {% if game.one_liner %}
+    <div class="detail-section">
+        <p style="font-style: italic; color: var(--teal-light);">"{{ game.one_liner }}"</p>
+    </div>
+    {% endif %}
+
+    <!-- 설명 -->
+    {% if game.description_ko %}
+    <div class="detail-section">
+        <h3>게임 설명</h3>
+        {% if game.description_ko|length > 150 %}
+        <p id="desc-short">{{ game.description_ko[:150] }}...</p>
+        <p id="desc-full" style="display:none;">{{ game.description_ko }}</p>
+        <button id="desc-toggle" onclick="toggleDesc()" style="
+            background:none; border:none; cursor:pointer;
+            color:var(--teal-light); font-size:13px; font-weight:600;
+            padding:6px 0; font-family:'Pretendard',sans-serif;
+        ">더보기</button>
+        {% else %}
+        <p>{{ game.description_ko }}</p>
+        {% endif %}
+    </div>
+    {% endif %}
+
+    <!-- 카테고리/메카니즘 -->
+    {% if game.categories %}
+    <div class="detail-section">
+        <h3>카테고리</h3>
+        <div class="tags">
+            {% for cat in game.categories %}
+            <span class="tag">{{ cat }}</span>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    {% if game.mechanisms %}
+    <div class="detail-section">
+        <h3>메카니즘</h3>
+        <div class="tags">
+            {% for mech in game.mechanisms %}
+            <span class="tag">{{ mech }}</span>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- 플레이 버튼 -->
+    <a href="/games/{{ game.id }}/chat?from={{ from_page|default('games') }}" class="play-btn">게임마스터 안내</a>
+</div>
+{% endblock %}
+
+{% block extra_script %}
+<script>
+function toggleDesc() {
+    var s = document.getElementById('desc-short');
+    var f = document.getElementById('desc-full');
+    var btn = document.getElementById('desc-toggle');
+    if (f.style.display === 'none') {
+        s.style.display = 'none';
+        f.style.display = '';
+        btn.textContent = '접기';
+    } else {
+        s.style.display = '';
+        f.style.display = 'none';
+        btn.textContent = '더보기';
+    }
+}
+</script>
+{% endblock %}

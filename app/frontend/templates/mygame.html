@@ -1,0 +1,266 @@
+{% extends "base.html" %}
+{% block title %}GMJJ - Mygame{% endblock %}
+
+{% block extra_style %}
+/* ── 헤더 ── */
+.mygame-header {
+    padding: 20px 16px 12px;
+    background: var(--bg-secondary);
+    border-bottom: 1px solid var(--border);
+}
+.mygame-header h1 {
+    font-family: 'Jua', sans-serif;
+    font-size: 22px;
+    color: var(--text-primary);
+}
+.mygame-header p {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-top: 4px;
+}
+
+/* ── 게임 리스트 (games.html과 동일) ── */
+.game-list {
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+.game-card {
+    display: flex;
+    gap: 14px;
+    padding: 14px;
+    background: var(--bg-card);
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    text-decoration: none;
+    color: inherit;
+    transition: all 0.2s;
+}
+.game-card:hover {
+    border-color: rgba(45,212,191,0.2);
+    background: #1A2A44;
+}
+.game-thumb {
+    width: 72px;
+    height: 72px;
+    border-radius: 8px;
+    object-fit: cover;
+    flex-shrink: 0;
+    background: var(--bg-secondary);
+}
+.game-thumb-placeholder {
+    width: 72px;
+    height: 72px;
+    border-radius: 8px;
+    flex-shrink: 0;
+    background: linear-gradient(135deg, var(--emerald-deep) 0%, var(--teal) 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.game-thumb-placeholder svg {
+    width: 28px;
+    height: 28px;
+    fill: rgba(255,255,255,0.3);
+}
+.game-info {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+.game-name {
+    font-family: 'Jua', sans-serif;
+    font-size: 16px;
+    color: var(--text-primary);
+    margin-bottom: 4px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.game-oneliner {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-bottom: 6px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.game-meta {
+    display: flex;
+    gap: 12px;
+    font-size: 11px;
+    color: var(--text-secondary);
+}
+.game-meta span {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+}
+.game-meta svg {
+    width: 12px;
+    height: 12px;
+    fill: var(--text-muted);
+}
+
+/* 즐겨찾기 해제 버튼 */
+.fav-btn {
+    flex-shrink: 0;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    align-self: center;
+}
+.fav-btn svg {
+    width: 22px;
+    height: 22px;
+    fill: #FBBF24;
+    stroke: #FBBF24;
+    stroke-width: 2;
+    transition: all 0.2s;
+}
+
+/* 빈 상태 */
+.empty-state {
+    text-align: center;
+    padding: 80px 24px;
+    color: var(--text-muted);
+}
+.empty-state svg {
+    width: 48px;
+    height: 48px;
+    fill: none;
+    stroke: var(--text-muted);
+    stroke-width: 1.5;
+    margin-bottom: 16px;
+    opacity: 0.3;
+}
+.empty-state p {
+    font-size: 14px;
+    line-height: 1.6;
+}
+.empty-state a {
+    color: var(--teal-light);
+    text-decoration: none;
+}
+
+/* 로딩 */
+.loading {
+    text-align: center;
+    padding: 60px 24px;
+    color: var(--text-muted);
+    font-size: 14px;
+}
+{% endblock %}
+
+{% block content %}
+<div class="mygame-header">
+    <h1>Mygame</h1>
+    <p id="fav-count"></p>
+</div>
+
+<div id="game-list" class="game-list">
+    <div class="loading">불러오는 중...</div>
+</div>
+{% endblock %}
+
+{% block extra_script %}
+<script>
+function getFavs() {
+    try { return JSON.parse(localStorage.getItem('gmjj_favs') || '[]'); }
+    catch { return []; }
+}
+
+function saveFavs(favs) {
+    localStorage.setItem('gmjj_favs', JSON.stringify(favs));
+}
+
+function removeFav(gameId) {
+    var favs = getFavs();
+    var idx = favs.indexOf(gameId);
+    if (idx > -1) favs.splice(idx, 1);
+    saveFavs(favs);
+    loadMygames();
+}
+
+function renderGame(game) {
+    var thumbHtml = '';
+    if (game.image_url) {
+        thumbHtml = '<img src="' + game.image_url + '" alt="' + game.name_ko + '" class="game-thumb" loading="lazy">';
+    } else {
+        thumbHtml = '<div class="game-thumb-placeholder"><svg viewBox="0 0 24 24"><path d="M21 6H3c-1.1 0-2 .9-2 2v8c0 1.1.9 2 2 2h18c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm-10 7H8v3H6v-3H3v-2h3V8h2v3h3v2zm4.5 2c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm4-3c-.83 0-1.5-.67-1.5-1.5S18.67 9 19.5 9s1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/></svg></div>';
+    }
+
+    var metaParts = [];
+    if (game.min_players) {
+        var players = game.min_players + '';
+        if (game.max_players && game.max_players !== game.min_players) players += '~' + game.max_players;
+        metaParts.push('<span><svg viewBox="0 0 24 24"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>' + players + '명</span>');
+    }
+    if (game.playtime) {
+        metaParts.push('<span><svg viewBox="0 0 24 24"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z"/></svg>' + game.playtime + '분</span>');
+    }
+    if (game.rating) {
+        metaParts.push('<span><svg viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>' + game.rating.toFixed(1) + '</span>');
+    }
+
+    return '<div class="game-card">' +
+        '<button class="fav-btn" onclick="removeFav(' + game.id + ')">' +
+            '<svg viewBox="0 0 24 24"><polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"/></svg>' +
+        '</button>' +
+        '<a href="/games/' + game.id + '?from=mygame" style="display:flex;align-items:center;gap:14px;flex:1;min-width:0;text-decoration:none;color:inherit;">' +
+            thumbHtml +
+            '<div class="game-info">' +
+                '<div class="game-name">' + game.name_ko + '</div>' +
+                (game.one_liner ? '<div class="game-oneliner">' + game.one_liner + '</div>' : '') +
+                '<div class="game-meta">' + metaParts.join('') + '</div>' +
+            '</div>' +
+        '</a>' +
+    '</div>';
+}
+
+function loadMygames() {
+    var favs = getFavs();
+    var listEl = document.getElementById('game-list');
+    var countEl = document.getElementById('fav-count');
+
+    if (favs.length === 0) {
+        countEl.textContent = '';
+        listEl.innerHTML =
+            '<div class="empty-state">' +
+                '<svg viewBox="0 0 24 24"><polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"/></svg>' +
+                '<p>즐겨찾기한 게임이 없습니다.<br><a href="/games">게임 목록</a>에서 별을 눌러 추가하세요.</p>' +
+            '</div>';
+        return;
+    }
+
+    countEl.textContent = favs.length + '개의 게임';
+    listEl.innerHTML = '<div class="loading">불러오는 중...</div>';
+
+    fetch('/api/mygames?ids=' + favs.join(','))
+        .then(function(r) { return r.json(); })
+        .then(function(games) {
+            if (games.length === 0) {
+                listEl.innerHTML =
+                    '<div class="empty-state"><p>게임 데이터를 불러올 수 없습니다.</p></div>';
+                return;
+            }
+            listEl.innerHTML = games.map(renderGame).join('');
+        })
+        .catch(function() {
+            listEl.innerHTML =
+                '<div class="empty-state"><p>네트워크 오류가 발생했습니다.</p></div>';
+        });
+}
+
+loadMygames();
+</script>
+{% endblock %}

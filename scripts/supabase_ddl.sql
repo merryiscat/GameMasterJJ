@@ -213,6 +213,33 @@ CREATE TABLE IF NOT EXISTS crawl_jobs (
     created_at      timestamptz DEFAULT now()
 );
 
+-- 12. rule_pipeline: 룰 전처리 파이프라인 상태 추적
+CREATE TABLE IF NOT EXISTS rule_pipeline (
+    id              serial PRIMARY KEY,
+    game_rule_id    int REFERENCES game_rules(id) ON DELETE CASCADE,
+    step            text NOT NULL,               -- 'ocr' | 'parse' | 'vectorize'
+    status          text DEFAULT 'pending',      -- 'pending' | 'running' | 'done' | 'error'
+    started_at      timestamptz,
+    finished_at     timestamptz,
+    log             text,                        -- 에러/결과 로그
+    created_at      timestamptz DEFAULT now()
+);
+
+-- 14. game_rule_sources: 룰 수집 소스 (멀티소스)
+CREATE TABLE IF NOT EXISTS game_rule_sources (
+    id              serial PRIMARY KEY,
+    game_rule_id    int REFERENCES game_rules(id) ON DELETE CASCADE,
+    source_type     text NOT NULL,               -- 'pdf' | 'youtube' | 'namuwiki' | 'blog'
+    source_url      text,
+    source_file     text,                        -- 로컬 파일 경로
+    priority        int NOT NULL,                -- 1=pdf, 2=namuwiki, 3=youtube, 4=blog
+    raw_content     text,                        -- 추출된 원본 텍스트
+    language        text DEFAULT 'ko',
+    status          text DEFAULT 'raw',          -- 'raw' | 'processed' | 'error'
+    metadata        jsonb,
+    created_at      timestamptz DEFAULT now()
+);
+
 -- ============================================================
 -- 인덱스
 -- ============================================================
@@ -231,6 +258,10 @@ CREATE INDEX IF NOT EXISTS idx_crawl_jobs_source ON crawl_jobs(source_id);
 CREATE INDEX IF NOT EXISTS idx_crawl_jobs_status ON crawl_jobs(status);
 CREATE INDEX IF NOT EXISTS idx_game_relations_game ON game_relations(game_id);
 CREATE INDEX IF NOT EXISTS idx_game_relations_related ON game_relations(related_id);
+CREATE INDEX IF NOT EXISTS idx_rule_pipeline_game_rule ON rule_pipeline(game_rule_id);
+CREATE INDEX IF NOT EXISTS idx_rule_pipeline_status ON rule_pipeline(status);
+CREATE INDEX IF NOT EXISTS idx_rule_sources_rule ON game_rule_sources(game_rule_id);
+CREATE INDEX IF NOT EXISTS idx_rule_sources_type ON game_rule_sources(source_type);
 
 -- ============================================================
 -- updated_at 자동 갱신 트리거

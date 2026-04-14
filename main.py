@@ -14,6 +14,7 @@ from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 
 from app.admin.router import router as admin_router
+from app.frontend.router import router as frontend_router
 
 # ============================================================
 # FastAPI 앱 생성
@@ -25,14 +26,9 @@ images_dir = Path(__file__).parent / "data" / "images"
 images_dir.mkdir(parents=True, exist_ok=True)
 app.mount("/static/images", StaticFiles(directory=str(images_dir)), name="images")
 
-# 어드민 라우터 등록
-app.include_router(admin_router)
-
-
-@app.get("/")
-async def root():
-    """루트 페이지 - 헬스체크 겸용"""
-    return {"message": "GMJJ 서버 실행 중", "admin": "/admin/"}
+# 라우터 등록
+app.include_router(admin_router)      # /admin/*
+app.include_router(frontend_router)   # / (사용자 프론트엔드)
 
 
 # ============================================================

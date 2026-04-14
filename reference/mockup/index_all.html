@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GMJJ 폰트 시안 비교</title>
+<!-- Pretendard -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css">
+<!-- Google Fonts: 제목용 + 본문용 후보들 -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Do+Hyeon&family=Jua&family=Noto+Sans+KR:wght@400;500;700;900&family=IBM+Plex+Sans+KR:wght@400;500;700&family=Gamja+Flower&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Pretendard', sans-serif;
+    background: #0C0F14;
+    color: #fff;
+    min-height: 100vh;
+    padding: 40px 20px;
+  }
+  h1 {
+    text-align: center;
+    font-family: 'Black Han Sans', sans-serif;
+    font-size: 32px;
+    margin-bottom: 8px;
+    color: #eee;
+  }
+  .subtitle {
+    text-align: center;
+    color: #888;
+    margin-bottom: 40px;
+    font-size: 14px;
+  }
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(375px, 1fr));
+    gap: 40px;
+    max-width: 1600px;
+    margin: 0 auto;
+    justify-items: center;
+  }
+
+  /* ── 카드 ── */
+  .scheme-card {
+    width: 375px;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+  }
+  .scheme-label {
+    padding: 14px 20px;
+    font-size: 14px;
+    font-weight: 700;
+    background: #0E7490;
+    color: #fff;
+    font-family: 'Pretendard', sans-serif;
+  }
+  .scheme-label small {
+    display: block;
+    font-weight: 400;
+    font-size: 11px;
+    opacity: 0.7;
+    margin-top: 4px;
+  }
+
+  /* ── 폰 프레임 ── */
+  .phone {
+    width: 375px;
+    height: 700px;
+    background: #0B1120;
+    color: #D1D5DB;
+    display: flex;
+    flex-direction: column;
+  }
+  .home-hero {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+    padding: 40px 24px;
+  }
+  .home-hero .logo {
+    font-size: 28px;
+    letter-spacing: 4px;
+    color: #2DD4BF;
+  }
+
+  .section-btn {
+    width: 280px;
+    padding: 26px 24px;
+    border-radius: 14px;
+    cursor: pointer;
+    border: 2px solid transparent;
+    text-align: left;
+    transition: all 0.2s;
+  }
+  .section-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.25);
+  }
+  .section-btn .title {
+    font-size: 22px;
+  }
+  .section-btn .desc {
+    font-size: 12px;
+    margin-top: 8px;
+  }
+  .section-btn.board {
+    background: linear-gradient(135deg, #065F46 0%, #0D9488 100%);
+    color: #CCFBF1;
+    border-color: #0D9488;
+  }
+  .section-btn.board .desc { color: rgba(204,251,241,0.5); }
+  .section-btn.trpg {
+    background: rgba(14,116,144,0.12);
+    color: #67E8F9;
+    border-color: #0E7490;
+  }
+  .section-btn.trpg .desc { color: rgba(103,232,249,0.4); }
+
+  /* 네비 */
+  .bottom-nav {
+    height: 64px;
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    background: #080D18;
+    border-top: 1px solid rgba(128,128,128,0.1);
+  }
+  .nav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    font-size: 11px;
+    font-weight: 500;
+    cursor: pointer;
+    opacity: 0.45;
+    color: #4B5563;
+  }
+  .nav-item svg { width: 22px; height: 22px; fill: #4B5563; }
+  .nav-item.active { opacity: 1; color: #E11D48; }
+  .nav-item.active svg { fill: #E11D48; }
+
+  /* ── 폰트별 오버라이드 ── */
+
+  /* A: Black Han Sans + Pretendard */
+  .font-a .phone { font-family: 'Pretendard', sans-serif; }
+  .font-a .logo { font-family: 'Black Han Sans', sans-serif; }
+  .font-a .section-btn .title { font-family: 'Black Han Sans', sans-serif; letter-spacing: 1px; }
+  .font-a .section-btn .desc { font-family: 'Pretendard', sans-serif; font-weight: 400; }
+  .font-a .nav-item { font-family: 'Pretendard', sans-serif; }
+
+  /* B: Do Hyeon + Noto Sans KR */
+  .font-b .phone { font-family: 'Noto Sans KR', sans-serif; }
+  .font-b .logo { font-family: 'Do Hyeon', sans-serif; }
+  .font-b .section-btn .title { font-family: 'Do Hyeon', sans-serif; letter-spacing: 1px; }
+  .font-b .section-btn .desc { font-family: 'Noto Sans KR', sans-serif; font-weight: 400; }
+  .font-b .nav-item { font-family: 'Noto Sans KR', sans-serif; }
+
+  /* C: Jua + Pretendard */
+  .font-c .phone { font-family: 'Pretendard', sans-serif; }
+  .font-c .logo { font-family: 'Jua', sans-serif; }
+  .font-c .section-btn .title { font-family: 'Jua', sans-serif; letter-spacing: 1px; }
+  .font-c .section-btn .desc { font-family: 'Pretendard', sans-serif; font-weight: 400; }
+  .font-c .nav-item { font-family: 'Pretendard', sans-serif; }
+
+  /* D: Noto Sans KR 단일 (굵기로 구분) */
+  .font-d .phone { font-family: 'Noto Sans KR', sans-serif; }
+  .font-d .logo { font-family: 'Noto Sans KR', sans-serif; font-weight: 900; }
+  .font-d .section-btn .title { font-family: 'Noto Sans KR', sans-serif; font-weight: 900; letter-spacing: 1px; }
+  .font-d .section-btn .desc { font-family: 'Noto Sans KR', sans-serif; font-weight: 400; }
+  .font-d .nav-item { font-family: 'Noto Sans KR', sans-serif; }
+
+  /* 폰트 정보 카드 */
+  .font-info {
+    max-width: 1600px;
+    margin: 50px auto 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+    gap: 16px;
+  }
+  .font-info-card {
+    background: rgba(255,255,255,0.03);
+    border-radius: 10px;
+    padding: 18px 22px;
+    border-left: 3px solid #0D9488;
+  }
+  .font-info-card h3 {
+    font-size: 14px;
+    color: #ccc;
+    margin-bottom: 8px;
+  }
+  .font-info-card p {
+    font-size: 12px;
+    color: #777;
+    line-height: 1.7;
+  }
+  .font-info-card .sample-title {
+    margin: 10px 0 4px;
+    font-size: 20px;
+    color: #2DD4BF;
+  }
+  .font-info-card .sample-body {
+    font-size: 14px;
+    color: #9CA3AF;
+    line-height: 1.6;
+  }
+  .font-a-sample .sample-title { font-family: 'Black Han Sans', sans-serif; }
+  .font-a-sample .sample-body { font-family: 'Pretendard', sans-serif; }
+  .font-b-sample .sample-title { font-family: 'Do Hyeon', sans-serif; }
+  .font-b-sample .sample-body { font-family: 'Noto Sans KR', sans-serif; }
+  .font-c-sample .sample-title { font-family: 'Jua', sans-serif; }
+  .font-c-sample .sample-body { font-family: 'Pretendard', sans-serif; }
+  .font-d-sample .sample-title { font-family: 'Noto Sans KR', sans-serif; font-weight: 900; }
+  .font-d-sample .sample-body { font-family: 'Noto Sans KR', sans-serif; font-weight: 400; }
+</style>
+</head>
+<body>
+
+<h1>GMJJ 폰트 시안 비교</h1>
+<p class="subtitle">색상: 유사색 조화 (에메랄드~시안 + 로즈) 고정 / 폰트 조합 4가지</p>
+
+<div class="grid">
+
+  <!-- A: Black Han Sans + Pretendard -->
+  <div class="scheme-card font-a">
+    <div class="scheme-label">
+      A. Black Han Sans + Pretendard
+      <small>임팩트 있는 제목 + 깔끔한 본문</small>
+    </div>
+    <div class="phone">
+      <div class="home-hero">
+        <div class="logo">GMJJ</div>
+        <button class="section-btn board">
+          <div class="title">보드게임</div>
+          <div class="desc">룰 안내 / 게임 진행 / 추천</div>
+        </button>
+        <button class="section-btn trpg">
+          <div class="title">TRPG</div>
+          <div class="desc">게임마스터 / 시나리오 / 캐릭터</div>
+        </button>
+      </div>
+      <nav class="bottom-nav">
+        <div class="nav-item"><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg>커뮤니티</div>
+        <div class="nav-item active"><svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>홈</div>
+        <div class="nav-item"><svg viewBox="0 0 24 24"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58a.49.49 0 00.12-.61l-1.92-3.32a.49.49 0 00-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54a.484.484 0 00-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.07.62-.07.94s.02.64.07.94l-2.03 1.58a.49.49 0 00-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg>설정</div>
+      </nav>
+    </div>
+  </div>
+
+  <!-- B: Do Hyeon + Noto Sans KR -->
+  <div class="scheme-card font-b">
+    <div class="scheme-label">
+      B. Do Hyeon + Noto Sans KR
+      <small>모던한 제목 + 안정적인 본문</small>
+    </div>
+    <div class="phone">
+      <div class="home-hero">
+        <div class="logo">GMJJ</div>
+        <button class="section-btn board">
+          <div class="title">보드게임</div>
+          <div class="desc">룰 안내 / 게임 진행 / 추천</div>
+        </button>
+        <button class="section-btn trpg">
+          <div class="title">TRPG</div>
+          <div class="desc">게임마스터 / 시나리오 / 캐릭터</div>
+        </button>
+      </div>
+      <nav class="bottom-nav">
+        <div class="nav-item"><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg>커뮤니티</div>
+        <div class="nav-item active"><svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>홈</div>
+        <div class="nav-item"><svg viewBox="0 0 24 24"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58a.49.49 0 00.12-.61l-1.92-3.32a.49.49 0 00-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54a.484.484 0 00-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.07.62-.07.94s.02.64.07.94l-2.03 1.58a.49.49 0 00-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg>설정</div>
+      </nav>
+    </div>
+  </div>
+
+  <!-- C: Jua + Pretendard -->
+  <div class="scheme-card font-c">
+    <div class="scheme-label">
+      C. Jua + Pretendard
+      <small>부드럽고 캐주얼한 제목 + 깔끔한 본문</small>
+    </div>
+    <div class="phone">
+      <div class="home-hero">
+        <div class="logo">GMJJ</div>
+        <button class="section-btn board">
+          <div class="title">보드게임</div>
+          <div class="desc">룰 안내 / 게임 진행 / 추천</div>
+        </button>
+        <button class="section-btn trpg">
+          <div class="title">TRPG</div>
+          <div class="desc">게임마스터 / 시나리오 / 캐릭터</div>
+        </button>
+      </div>
+      <nav class="bottom-nav">
+        <div class="nav-item"><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg>커뮤니티</div>
+        <div class="nav-item active"><svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>홈</div>
+        <div class="nav-item"><svg viewBox="0 0 24 24"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58a.49.49 0 00.12-.61l-1.92-3.32a.49.49 0 00-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54a.484.484 0 00-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.07.62-.07.94s.02.64.07.94l-2.03 1.58a.49.49 0 00-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg>설정</div>
+      </nav>
+    </div>
+  </div>
+
+  <!-- D: Noto Sans KR 단일 -->
+  <div class="scheme-card font-d">
+    <div class="scheme-label">
+      D. Noto Sans KR 단일 (굵기로 구분)
+      <small>통일감 있는 단일 폰트</small>
+    </div>
+    <div class="phone">
+      <div class="home-hero">
+        <div class="logo">GMJJ</div>
+        <button class="section-btn board">
+          <div class="title">보드게임</div>
+          <div class="desc">룰 안내 / 게임 진행 / 추천</div>
+        </button>
+        <button class="section-btn trpg">
+          <div class="title">TRPG</div>
+          <div class="desc">게임마스터 / 시나리오 / 캐릭터</div>
+        </button>
+      </div>
+      <nav class="bottom-nav">
+        <div class="nav-item"><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg>커뮤니티</div>
+        <div class="nav-item active"><svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>홈</div>
+        <div class="nav-item"><svg viewBox="0 0 24 24"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58a.49.49 0 00.12-.61l-1.92-3.32a.49.49 0 00-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54a.484.484 0 00-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.07.62-.07.94s.02.64.07.94l-2.03 1.58a.49.49 0 00-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg>설정</div>
+      </nav>
+    </div>
+  </div>
+
+</div>
+
+<!-- 폰트 상세 정보 -->
+<div class="font-info">
+  <div class="font-info-card font-a-sample">
+    <h3>A. Black Han Sans + Pretendard</h3>
+    <p>제목: 굵고 강렬한 고딕, 게임/엔터 앱에 인기<br>본문: 한국 IT업계 1위 사용 폰트, Apple 느낌</p>
+    <div class="sample-title">게임마스터 보드게임</div>
+    <div class="sample-body">다양한 보드게임의 룰을 쉽게 안내해 드립니다.</div>
+  </div>
+  <div class="font-info-card font-b-sample">
+    <h3>B. Do Hyeon + Noto Sans KR</h3>
+    <p>제목: 깔끔하고 모던한 고딕, 넓은 자간<br>본문: Google 공식 한글 폰트, 가장 안정적</p>
+    <div class="sample-title">게임마스터 보드게임</div>
+    <div class="sample-body">다양한 보드게임의 룰을 쉽게 안내해 드립니다.</div>
+  </div>
+  <div class="font-info-card font-c-sample">
+    <h3>C. Jua + Pretendard</h3>
+    <p>제목: 둥글고 친근한 느낌, 캐주얼 게임에 적합<br>본문: Pretendard로 가독성 확보</p>
+    <div class="sample-title">게임마스터 보드게임</div>
+    <div class="sample-body">다양한 보드게임의 룰을 쉽게 안내해 드립니다.</div>
+  </div>
+  <div class="font-info-card font-d-sample">
+    <h3>D. Noto Sans KR 단일</h3>
+    <p>제목/본문 모두 같은 폰트, 굵기(900/400)로 구분<br>가장 깔끔하고 통일감 있는 선택</p>
+    <div class="sample-title">게임마스터 보드게임</div>
+    <div class="sample-body">다양한 보드게임의 룰을 쉽게 안내해 드립니다.</div>
+  </div>
+</div>
+
+</body>
+</html>

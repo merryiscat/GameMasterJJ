@@ -1,0 +1,125 @@
+- generic [active] [ref=e1]:
+  - heading "GMJJ 폰트 시안 비교" [level=1] [ref=e2]
+  - paragraph [ref=e3]: "색상: 유사색 조화 (에메랄드~시안 + 로즈) 고정 / 폰트 조합 4가지"
+  - generic [ref=e4]:
+    - generic [ref=e5]:
+      - generic [ref=e6]:
+        - text: A. Black Han Sans + Pretendard
+        - generic [ref=e7]: 임팩트 있는 제목 + 깔끔한 본문
+      - generic [ref=e8]:
+        - generic [ref=e9]:
+          - generic [ref=e10]: GMJJ
+          - button "보드게임 룰 안내 / 게임 진행 / 추천" [ref=e11] [cursor=pointer]:
+            - generic [ref=e12]: 보드게임
+            - generic [ref=e13]: 룰 안내 / 게임 진행 / 추천
+          - button "TRPG 게임마스터 / 시나리오 / 캐릭터" [ref=e14] [cursor=pointer]:
+            - generic [ref=e15]: TRPG
+            - generic [ref=e16]: 게임마스터 / 시나리오 / 캐릭터
+        - navigation [ref=e17]:
+          - generic [ref=e18] [cursor=pointer]:
+            - img [ref=e19]
+            - text: 커뮤니티
+          - generic [ref=e21] [cursor=pointer]:
+            - img [ref=e22]
+            - text: 홈
+          - generic [ref=e24] [cursor=pointer]:
+            - img [ref=e25]
+            - text: 설정
+    - generic [ref=e27]:
+      - generic [ref=e28]:
+        - text: B. Do Hyeon + Noto Sans KR
+        - generic [ref=e29]: 모던한 제목 + 안정적인 본문
+      - generic [ref=e30]:
+        - generic [ref=e31]:
+          - generic [ref=e32]: GMJJ
+          - button "보드게임 룰 안내 / 게임 진행 / 추천" [ref=e33] [cursor=pointer]:
+            - generic [ref=e34]: 보드게임
+            - generic [ref=e35]: 룰 안내 / 게임 진행 / 추천
+          - button "TRPG 게임마스터 / 시나리오 / 캐릭터" [ref=e36] [cursor=pointer]:
+            - generic [ref=e37]: TRPG
+            - generic [ref=e38]: 게임마스터 / 시나리오 / 캐릭터
+        - navigation [ref=e39]:
+          - generic [ref=e40] [cursor=pointer]:
+            - img [ref=e41]
+            - text: 커뮤니티
+          - generic [ref=e43] [cursor=pointer]:
+            - img [ref=e44]
+            - text: 홈
+          - generic [ref=e46] [cursor=pointer]:
+            - img [ref=e47]
+            - text: 설정
+    - generic [ref=e49]:
+      - generic [ref=e50]:
+        - text: C. Jua + Pretendard
+        - generic [ref=e51]: 부드럽고 캐주얼한 제목 + 깔끔한 본문
+      - generic [ref=e52]:
+        - generic [ref=e53]:
+          - generic [ref=e54]: GMJJ
+          - button "보드게임 룰 안내 / 게임 진행 / 추천" [ref=e55] [cursor=pointer]:
+            - generic [ref=e56]: 보드게임
+            - generic [ref=e57]: 룰 안내 / 게임 진행 / 추천
+          - button "TRPG 게임마스터 / 시나리오 / 캐릭터" [ref=e58] [cursor=pointer]:
+            - generic [ref=e59]: TRPG
+            - generic [ref=e60]: 게임마스터 / 시나리오 / 캐릭터
+        - navigation [ref=e61]:
+          - generic [ref=e62] [cursor=pointer]:
+            - img [ref=e63]
+            - text: 커뮤니티
+          - generic [ref=e65] [cursor=pointer]:
+            - img [ref=e66]
+            - text: 홈
+          - generic [ref=e68] [cursor=pointer]:
+            - img [ref=e69]
+            - text: 설정
+    - generic [ref=e71]:
+      - generic [ref=e72]:
+        - text: D. Noto Sans KR 단일 (굵기로 구분)
+        - generic [ref=e73]: 통일감 있는 단일 폰트
+      - generic [ref=e74]:
+        - generic [ref=e75]:
+          - generic [ref=e76]: GMJJ
+          - button "보드게임 룰 안내 / 게임 진행 / 추천" [ref=e77] [cursor=pointer]:
+            - generic [ref=e78]: 보드게임
+            - generic [ref=e79]: 룰 안내 / 게임 진행 / 추천
+          - button "TRPG 게임마스터 / 시나리오 / 캐릭터" [ref=e80] [cursor=pointer]:
+            - generic [ref=e81]: TRPG
+            - generic [ref=e82]: 게임마스터 / 시나리오 / 캐릭터
+        - navigation [ref=e83]:
+          - generic [ref=e84] [cursor=pointer]:
+            - img [ref=e85]
+            - text: 커뮤니티
+          - generic [ref=e87] [cursor=pointer]:
+            - img [ref=e88]
+            - text: 홈
+          - generic [ref=e90] [cursor=pointer]:
+            - img [ref=e91]
+            - text: 설정
+  - generic [ref=e93]:
+    - generic [ref=e94]:
+      - heading "A. Black Han Sans + Pretendard" [level=3] [ref=e95]
+      - paragraph [ref=e96]:
+        - text: "제목: 굵고 강렬한 고딕, 게임/엔터 앱에 인기"
+        - text: "본문: 한국 IT업계 1위 사용 폰트, Apple 느낌"
+      - generic [ref=e97]: 게임마스터 보드게임
+      - generic [ref=e98]: 다양한 보드게임의 룰을 쉽게 안내해 드립니다.
+    - generic [ref=e99]:
+      - heading "B. Do Hyeon + Noto Sans KR" [level=3] [ref=e100]
+      - paragraph [ref=e101]:
+        - text: "제목: 깔끔하고 모던한 고딕, 넓은 자간"
+        - text: "본문: Google 공식 한글 폰트, 가장 안정적"
+      - generic [ref=e102]: 게임마스터 보드게임
+      - generic [ref=e103]: 다양한 보드게임의 룰을 쉽게 안내해 드립니다.
+    - generic [ref=e104]:
+      - heading "C. Jua + Pretendard" [level=3] [ref=e105]
+      - paragraph [ref=e106]:
+        - text: "제목: 둥글고 친근한 느낌, 캐주얼 게임에 적합"
+        - text: "본문: Pretendard로 가독성 확보"
+      - generic [ref=e107]: 게임마스터 보드게임
+      - generic [ref=e108]: 다양한 보드게임의 룰을 쉽게 안내해 드립니다.
+    - generic [ref=e109]:
+      - heading "D. Noto Sans KR 단일" [level=3] [ref=e110]
+      - paragraph [ref=e111]:
+        - text: 제목/본문 모두 같은 폰트, 굵기(900/400)로 구분
+        - text: 가장 깔끔하고 통일감 있는 선택
+      - generic [ref=e112]: 게임마스터 보드게임
+      - generic [ref=e113]: 다양한 보드게임의 룰을 쉽게 안내해 드립니다.

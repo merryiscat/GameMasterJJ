@@ -1,0 +1,33 @@
+- generic [ref=e2]:
+  - main [ref=e3]:
+    - generic [ref=e4]:
+      - generic [ref=e5]:
+        - link [ref=e6] [cursor=pointer]:
+          - /url: /games/707/chat?from=games
+          - img [ref=e7]
+        - generic [ref=e9]: 뱅!
+        - generic [ref=e10]: 진행 중
+      - img "게임마스터 JJ" [ref=e12]
+      - generic [ref=e13]:
+        - generic [ref=e15]:
+          - generic [ref=e16]: 게임마스터 JJ
+          - text: 뱅! 게임을 시작합니다! 준비가 되면 말씀해주세요.
+        - generic [ref=e17]:
+          - textbox "말하거나 입력하세요..." [ref=e18]
+          - button [ref=e19] [cursor=pointer]:
+            - img [ref=e20]
+          - button [ref=e22] [cursor=pointer]:
+            - img [ref=e23]
+  - navigation [ref=e25]:
+    - link "Mygame" [ref=e26] [cursor=pointer]:
+      - /url: /mygame
+      - img [ref=e27]
+      - text: Mygame
+    - link "홈" [ref=e29] [cursor=pointer]:
+      - /url: /
+      - img [ref=e30]
+      - text: 홈
+    - link "설정" [ref=e32] [cursor=pointer]:
+      - /url: "#"
+      - img [ref=e33]
+      - text: 설정

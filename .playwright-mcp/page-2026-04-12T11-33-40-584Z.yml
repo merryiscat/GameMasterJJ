@@ -1,0 +1,37 @@
+- generic [ref=e2]:
+  - main [ref=e3]:
+    - generic [ref=e4]:
+      - generic [ref=e5]:
+        - link [ref=e6] [cursor=pointer]:
+          - /url: /games/69
+          - img [ref=e7]
+        - generic [ref=e9]:
+          - generic [ref=e10]: 텔레스트레이션
+          - generic [ref=e11]: 게임마스터 JJ
+        - link "게임 진행" [ref=e12] [cursor=pointer]:
+          - /url: "#"
+      - generic [ref=e13]:
+        - generic [ref=e14]:
+          - heading "게임 정보" [level=4] [ref=e15]
+          - paragraph [ref=e17]: 텔레스트레이션은그림과 상상력으로 웃음을 만드는 파티 게임입니다. 이 게임은 마치 그림으로 하는텔레폰 게임(전달 놀이)처럼, 단어가 사람을 거치면서 점점 엉뚱하게 변해가는 과정을 즐기는 데에 중점을 둡니다.게임은 매우 단순하게 시작됩니다. 각 플레이어는스케치북과마커펜을 받고, 무작위로 주어진 단어를 첫 페이지에 씁니다. 다음 장에서는 그 단어를 그림으로 표현합니다. 이후 그 그림은 옆 사람에게 전달되고, 옆 사람은 그림을 보고 무슨 단어인지 추측해서 글로 씁니다. 다음 사람은 그 단어를 보고 또 그림을 그리고… 이 과정을 반복합니다....
+          - button "더보기" [ref=e18] [cursor=pointer]
+        - generic [ref=e19]:
+          - generic [ref=e20]: 게임마스터 JJ
+          - text: 텔레스트레이션에 대해 궁금한 점이 있으면 물어보세요! 룰, 전략, 게임 진행 방법 등 무엇이든 도와드릴게요.
+      - generic [ref=e21]:
+        - textbox "룰에 대해 질문하세요..." [ref=e22]
+        - button [ref=e23] [cursor=pointer]:
+          - img [ref=e24]
+  - navigation [ref=e26]:
+    - link "Mygame" [ref=e27] [cursor=pointer]:
+      - /url: /mygame
+      - img [ref=e28]
+      - text: Mygame
+    - link "홈" [ref=e30] [cursor=pointer]:
+      - /url: /
+      - img [ref=e31]
+      - text: 홈
+    - link "설정" [ref=e33] [cursor=pointer]:
+      - /url: "#"
+      - img [ref=e34]
+      - text: 설정

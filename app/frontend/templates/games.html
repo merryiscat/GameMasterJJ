@@ -1,0 +1,408 @@
+{% extends "base.html" %}
+{% block title %}GMJJ - 보드게임{% endblock %}
+
+{% block extra_style %}
+/* ── 상단 탭 ── */
+.tabs {
+    display: flex;
+    padding: 12px 16px 0;
+    gap: 4px;
+    background: var(--bg-secondary);
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    z-index: 50;
+}
+.tab {
+    padding: 10px 16px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-muted);
+    text-decoration: none;
+    border-bottom: 2px solid transparent;
+    transition: all 0.2s;
+}
+.tab:hover { color: var(--text-secondary); }
+.tab.active {
+    color: var(--teal-light);
+    border-bottom-color: var(--teal-light);
+}
+
+/* ── 검색바 ── */
+.search-bar {
+    padding: 12px 16px;
+    background: var(--bg-secondary);
+}
+.search-input {
+    width: 100%;
+    padding: 10px 16px 10px 40px;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    background: var(--bg-card);
+    color: var(--text-primary);
+    font-size: 14px;
+    font-family: 'Pretendard', sans-serif;
+    outline: none;
+    transition: border-color 0.2s;
+}
+.search-input::placeholder { color: var(--text-muted); }
+.search-input:focus { border-color: var(--teal); }
+.search-wrap {
+    position: relative;
+}
+.search-icon {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 18px;
+    height: 18px;
+    fill: var(--text-muted);
+}
+
+/* ── 결과 카운트 ── */
+.result-count {
+    padding: 8px 16px;
+    font-size: 12px;
+    color: var(--text-muted);
+}
+
+/* ── 게임 리스트 ── */
+.game-list {
+    padding: 0 16px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+.game-card {
+    display: flex;
+    gap: 14px;
+    padding: 14px;
+    background: var(--bg-card);
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    text-decoration: none;
+    color: inherit;
+    transition: all 0.2s;
+}
+.game-card:hover {
+    border-color: rgba(45,212,191,0.2);
+    background: #1A2A44;
+}
+
+/* 게임 이미지 */
+.game-thumb {
+    width: 72px;
+    height: 72px;
+    border-radius: 8px;
+    object-fit: cover;
+    flex-shrink: 0;
+    background: var(--bg-secondary);
+}
+.game-thumb-placeholder {
+    width: 72px;
+    height: 72px;
+    border-radius: 8px;
+    flex-shrink: 0;
+    background: linear-gradient(135deg, var(--emerald-deep) 0%, var(--teal) 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.game-thumb-placeholder svg {
+    width: 28px;
+    height: 28px;
+    fill: rgba(255,255,255,0.3);
+}
+
+/* 게임 정보 */
+.game-info {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+.game-name {
+    font-family: 'Jua', sans-serif;
+    font-size: 16px;
+    color: var(--text-primary);
+    margin-bottom: 4px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.game-oneliner {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-bottom: 6px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.game-meta {
+    display: flex;
+    gap: 12px;
+    font-size: 11px;
+    color: var(--text-secondary);
+}
+.game-meta span {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+}
+.game-meta svg {
+    width: 12px;
+    height: 12px;
+    fill: var(--text-muted);
+}
+
+/* ── 즐겨찾기 별 ── */
+.fav-btn {
+    flex-shrink: 0;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    align-self: center;
+}
+.fav-btn svg {
+    width: 22px;
+    height: 22px;
+    fill: none;
+    stroke: var(--text-muted);
+    stroke-width: 2;
+    transition: all 0.2s;
+}
+.fav-btn.active svg {
+    fill: #FBBF24;
+    stroke: #FBBF24;
+}
+
+/* ── 페이지네이션 ── */
+.pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    padding: 20px 16px;
+}
+.page-btn {
+    padding: 8px 14px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--bg-card);
+    color: var(--text-secondary);
+    font-size: 13px;
+    text-decoration: none;
+    transition: all 0.2s;
+}
+.page-btn:hover { border-color: var(--teal); color: var(--teal-light); }
+.page-btn.active {
+    background: var(--teal);
+    color: #fff;
+    border-color: var(--teal);
+}
+.page-btn.disabled {
+    opacity: 0.3;
+    pointer-events: none;
+}
+
+/* ── 빈 상태 ── */
+.empty-state {
+    text-align: center;
+    padding: 60px 24px;
+    color: var(--text-muted);
+}
+.empty-state .icon {
+    font-size: 48px;
+    margin-bottom: 12px;
+    opacity: 0.3;
+}
+.empty-state p {
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+/* ── 에러 ── */
+.error-banner {
+    margin: 12px 16px;
+    padding: 12px 16px;
+    background: rgba(225,29,72,0.1);
+    border: 1px solid rgba(225,29,72,0.3);
+    border-radius: 10px;
+    color: var(--rose-light);
+    font-size: 13px;
+}
+{% endblock %}
+
+{% block content %}
+<!-- 탭 -->
+<div class="tabs">
+    <a href="/games?tab=all" class="tab {% if tab == 'all' %}active{% endif %}">보드게임</a>
+    <a href="/games?tab=recommend" class="tab {% if tab == 'recommend' %}active{% endif %}">추천</a>
+    <a href="/games?tab=event" class="tab {% if tab == 'event' %}active{% endif %}">이벤트/광고</a>
+</div>
+
+<!-- 검색 -->
+<div class="search-bar">
+    <form action="/games" method="get">
+        <input type="hidden" name="tab" value="{{ tab }}">
+        <div class="search-wrap">
+            <svg class="search-icon" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0016 9.5 6.5 6.5 0 109.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+            <input type="text"
+                   name="search"
+                   class="search-input"
+                   placeholder="게임 이름으로 검색"
+                   value="{{ search }}"
+                   autocomplete="off">
+        </div>
+    </form>
+</div>
+
+{% if error %}
+<div class="error-banner">{{ error }}</div>
+{% endif %}
+
+<!-- 결과 수 -->
+<div class="result-count">
+    {% if search %}
+        "{{ search }}" 검색 결과 {{ total }}개
+    {% else %}
+        전체 {{ total }}개
+    {% endif %}
+</div>
+
+<!-- 게임 리스트 -->
+<div class="game-list">
+    {% if games %}
+        {% for game in games %}
+        <div class="game-card" data-game-id="{{ game.id }}">
+            <!-- 즐겨찾기 별 -->
+            <button class="fav-btn" data-id="{{ game.id }}" onclick="toggleFav(event, {{ game.id }})">
+                <svg viewBox="0 0 24 24"><polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"/></svg>
+            </button>
+
+            <!-- 썸네일 -->
+            <a href="/games/{{ game.id }}?from=games" style="display:flex;align-items:center;gap:14px;flex:1;min-width:0;text-decoration:none;color:inherit;">
+                {% if game.image_url %}
+                <img src="{{ game.image_url }}" alt="{{ game.name_ko }}" class="game-thumb" loading="lazy">
+                {% else %}
+                <div class="game-thumb-placeholder">
+                    <svg viewBox="0 0 24 24"><path d="M21 6H3c-1.1 0-2 .9-2 2v8c0 1.1.9 2 2 2h18c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm-10 7H8v3H6v-3H3v-2h3V8h2v3h3v2zm4.5 2c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm4-3c-.83 0-1.5-.67-1.5-1.5S18.67 9 19.5 9s1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/></svg>
+                </div>
+                {% endif %}
+
+                <!-- 게임 정보 -->
+                <div class="game-info">
+                    <div class="game-name">{{ game.name_ko }}</div>
+                    {% if game.one_liner %}
+                    <div class="game-oneliner">{{ game.one_liner }}</div>
+                    {% endif %}
+                    <div class="game-meta">
+                        {% if game.min_players %}
+                        <span>
+                            <svg viewBox="0 0 24 24"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>
+                            {{ game.min_players }}{% if game.max_players and game.max_players != game.min_players %}~{{ game.max_players }}{% endif %}명
+                        </span>
+                        {% endif %}
+                        {% if game.playtime %}
+                        <span>
+                            <svg viewBox="0 0 24 24"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z"/></svg>
+                            {{ game.playtime }}분
+                        </span>
+                        {% endif %}
+                        {% if game.rating %}
+                        <span>
+                            <svg viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+                            {{ "%.1f"|format(game.rating) }}
+                        </span>
+                        {% endif %}
+                    </div>
+                </div>
+            </a>
+        </div>
+        {% endfor %}
+    {% else %}
+        <div class="empty-state">
+            <div class="icon">
+                <svg viewBox="0 0 24 24" width="48" height="48" fill="currentColor" opacity="0.3"><path d="M21 6H3c-1.1 0-2 .9-2 2v8c0 1.1.9 2 2 2h18c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2z"/></svg>
+            </div>
+            {% if search %}
+            <p>"{{ search }}" 검색 결과가 없습니다.</p>
+            {% else %}
+            <p>등록된 게임이 없습니다.</p>
+            {% endif %}
+        </div>
+    {% endif %}
+</div>
+
+<!-- 페이지네이션 -->
+{% if total_pages > 1 %}
+<div class="pagination">
+    <a href="/games?page={{ page - 1 }}&search={{ search }}&tab={{ tab }}"
+       class="page-btn {% if page <= 1 %}disabled{% endif %}">이전</a>
+
+    {% for p in range(1, total_pages + 1) %}
+        {% if p == page %}
+        <span class="page-btn active">{{ p }}</span>
+        {% elif p <= 3 or p > total_pages - 2 or (p >= page - 1 and p <= page + 1) %}
+        <a href="/games?page={{ p }}&search={{ search }}&tab={{ tab }}" class="page-btn">{{ p }}</a>
+        {% elif p == 4 or p == total_pages - 2 %}
+        <span class="page-btn" style="border:none; background:none;">...</span>
+        {% endif %}
+    {% endfor %}
+
+    <a href="/games?page={{ page + 1 }}&search={{ search }}&tab={{ tab }}"
+       class="page-btn {% if page >= total_pages %}disabled{% endif %}">다음</a>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block extra_script %}
+<script>
+// 즐겨찾기 관리 (localStorage)
+function getFavs() {
+    try { return JSON.parse(localStorage.getItem('gmjj_favs') || '[]'); }
+    catch { return []; }
+}
+
+function saveFavs(favs) {
+    localStorage.setItem('gmjj_favs', JSON.stringify(favs));
+}
+
+function toggleFav(e, gameId) {
+    e.preventDefault();
+    e.stopPropagation();
+    var favs = getFavs();
+    var idx = favs.indexOf(gameId);
+    if (idx > -1) {
+        favs.splice(idx, 1);
+    } else {
+        favs.push(gameId);
+    }
+    saveFavs(favs);
+    renderFavs();
+}
+
+function renderFavs() {
+    var favs = getFavs();
+    document.querySelectorAll('.fav-btn').forEach(function(btn) {
+        var id = parseInt(btn.dataset.id);
+        if (favs.indexOf(id) > -1) {
+            btn.classList.add('active');
+        } else {
+            btn.classList.remove('active');
+        }
+    });
+}
+
+// 페이지 로드 시 즐겨찾기 상태 반영
+renderFavs();
+</script>
+{% endblock %}
