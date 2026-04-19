@@ -13,8 +13,8 @@ from pathlib import Path
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 
-from app.admin.router import router as admin_router
-from app.frontend.router import router as frontend_router
+from web.admin.router import router as admin_router
+from web.frontend.router import router as frontend_router
 
 # ============================================================
 # FastAPI 앱 생성

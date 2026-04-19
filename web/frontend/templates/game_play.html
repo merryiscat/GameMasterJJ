@@ -1,0 +1,798 @@
+{% extends "base.html" %}
+{% block title %}{{ game.name_ko }} - 게임 진행{% endblock %}
+
+{% block extra_style %}
+/* ── 전체 레이아웃 ── */
+.play-container {
+    display: flex;
+    flex-direction: column;
+    height: calc(100vh - 64px);
+}
+
+/* ── 상단 헤더 ── */
+.play-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 16px;
+    background: var(--bg-secondary);
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+}
+.play-back {
+    display: flex;
+    align-items: center;
+    color: var(--teal-light);
+    text-decoration: none;
+}
+.play-back svg {
+    width: 20px;
+    height: 20px;
+    fill: var(--teal-light);
+}
+.play-header .name {
+    font-family: 'Jua', sans-serif;
+    font-size: 15px;
+    color: var(--text-primary);
+    flex: 1;
+}
+
+/* 모드 전환 버튼 */
+.mode-toggle {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 5px 10px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--bg-card);
+    color: var(--text-muted);
+    font-size: 11px;
+    font-family: 'Pretendard', sans-serif;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+.mode-toggle svg {
+    width: 16px;
+    height: 16px;
+    fill: var(--text-muted);
+    transition: fill 0.2s;
+}
+.mode-toggle.voice-active {
+    border-color: var(--teal);
+    background: rgba(13,148,136,0.15);
+    color: var(--teal-light);
+}
+.mode-toggle.voice-active svg {
+    fill: var(--teal-light);
+}
+
+/* ── 상단: 이미지 영역 ── */
+.play-visual {
+    flex-shrink: 0;
+    height: 45%;
+    background: var(--bg-primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    position: relative;
+    border-bottom: 1px solid var(--border);
+}
+.play-visual img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* ── 하단 ── */
+.play-bottom {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+}
+
+/* 대화 로그 */
+.play-log {
+    flex: 1;
+    overflow-y: auto;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+.log-gm {
+    align-self: flex-start;
+    max-width: 90%;
+    padding: 12px 16px;
+    border-radius: 16px 16px 16px 4px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    color: var(--text-primary);
+    font-size: 14px;
+    line-height: 1.6;
+}
+.log-gm .gm-label {
+    font-size: 11px;
+    color: var(--teal-light);
+    font-weight: 600;
+    margin-bottom: 4px;
+}
+.log-user {
+    align-self: flex-end;
+    max-width: 85%;
+    padding: 12px 16px;
+    border-radius: 16px 16px 4px 16px;
+    background: var(--teal);
+    color: #fff;
+    font-size: 14px;
+    line-height: 1.5;
+}
+/* 테이블 스타일 (게임 진행) */
+.log-gm .rule-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 6px 0;
+    font-size: 13px;
+}
+.log-gm .rule-table th {
+    background: rgba(13,148,136,0.15);
+    color: var(--teal-light);
+    padding: 5px 8px;
+    text-align: left;
+    font-weight: 600;
+    border-bottom: 1px solid var(--border);
+}
+.log-gm .rule-table td {
+    padding: 4px 8px;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+.log-loading {
+    align-self: flex-start;
+    padding: 12px 16px;
+    border-radius: 16px 16px 16px 4px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+    font-size: 14px;
+}
+.typing-dots span {
+    animation: blink 1.4s infinite both;
+}
+.typing-dots span:nth-child(2) { animation-delay: 0.2s; }
+.typing-dots span:nth-child(3) { animation-delay: 0.4s; }
+@keyframes blink {
+    0%, 80%, 100% { opacity: 0.2; }
+    40% { opacity: 1; }
+}
+
+/* ── 채팅모드 입력 ── */
+.chat-mode-input {
+    flex-shrink: 0;
+    padding: 12px 16px;
+    background: var(--bg-secondary);
+    border-top: 1px solid var(--border);
+    display: flex;
+    align-items: flex-end;
+    gap: 8px;
+}
+.play-text-input {
+    flex: 1;
+    padding: 10px 14px;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    background: var(--bg-card);
+    color: var(--text-primary);
+    font-size: 14px;
+    font-family: 'Pretendard', sans-serif;
+    outline: none;
+    resize: none;
+    max-height: 80px;
+    line-height: 1.4;
+}
+.play-text-input::placeholder { color: var(--text-muted); }
+.play-text-input:focus { border-color: var(--teal); }
+.send-btn {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    border: none;
+    background: var(--teal);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: background 0.2s;
+}
+.send-btn:hover { background: var(--emerald-mid); }
+.send-btn:disabled { background: var(--text-muted); cursor: not-allowed; }
+.send-btn svg { width: 20px; height: 20px; fill: #fff; }
+
+/* ── 음성모드 입력 ── */
+.voice-mode-input {
+    flex-shrink: 0;
+    padding: 20px 16px;
+    background: var(--bg-secondary);
+    border-top: 1px solid var(--border);
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+}
+.voice-mode-input.active { display: flex; }
+.chat-mode-input.hidden { display: none; }
+
+.mic-btn {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    border: 2px solid var(--teal);
+    background: rgba(13,148,136,0.1);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+}
+.mic-btn svg {
+    width: 28px;
+    height: 28px;
+    fill: var(--teal-light);
+    transition: fill 0.2s;
+}
+.mic-btn:hover { background: rgba(13,148,136,0.2); }
+.mic-btn.recording {
+    border-color: var(--rose);
+    background: rgba(225,29,72,0.15);
+    animation: pulse 1.5s infinite;
+}
+.mic-btn.recording svg { fill: var(--rose-light); }
+@keyframes pulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(225,29,72,0.3); }
+    50% { box-shadow: 0 0 0 12px rgba(225,29,72,0); }
+}
+
+.mic-hint {
+    font-size: 12px;
+    color: var(--text-muted);
+}
+.mic-hint.recording {
+    color: var(--rose-light);
+}
+
+/* LLM 응답 중 표시 (음성모드) */
+.gm-speaking {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+}
+.gm-speaking.active {
+    display: flex;
+}
+.gm-speaking .speaking-waves {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    height: 40px;
+}
+.gm-speaking .speaking-waves span {
+    width: 4px;
+    border-radius: 2px;
+    background: var(--teal-light);
+    animation: wave 1.2s ease-in-out infinite;
+}
+.gm-speaking .speaking-waves span:nth-child(1) { height: 12px; animation-delay: 0s; }
+.gm-speaking .speaking-waves span:nth-child(2) { height: 20px; animation-delay: 0.1s; }
+.gm-speaking .speaking-waves span:nth-child(3) { height: 28px; animation-delay: 0.2s; }
+.gm-speaking .speaking-waves span:nth-child(4) { height: 20px; animation-delay: 0.3s; }
+.gm-speaking .speaking-waves span:nth-child(5) { height: 12px; animation-delay: 0.4s; }
+@keyframes wave {
+    0%, 100% { transform: scaleY(1); opacity: 0.5; }
+    50% { transform: scaleY(1.8); opacity: 1; }
+}
+.gm-speaking .speaking-label {
+    font-size: 13px;
+    color: var(--teal-light);
+    font-weight: 500;
+}
+{% endblock %}
+
+{% block content %}
+<div class="play-container">
+    <!-- 헤더 -->
+    <div class="play-header">
+        <a href="/games/{{ game.id }}/chat?from={{ from_page|default('games') }}" class="play-back">
+            <svg viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
+        </a>
+        <div class="name">{{ game.name_ko }}</div>
+        <button class="mode-toggle" id="modeToggle" onclick="switchMode()">
+            <!-- 채팅모드일 때: 마이크 아이콘 표시 (음성으로 전환) -->
+            <svg id="modeIcon" viewBox="0 0 24 24"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm-1-9c0-.55.45-1 1-1s1 .45 1 1v6c0 .55-.45 1-1 1s-1-.45-1-1V5zm6 6c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/></svg>
+            <span id="modeLabel">음성</span>
+        </button>
+    </div>
+
+    <!-- 상단: 이미지 -->
+    <div class="play-visual" id="playVisual">
+        <img src="/static/images/gmjj_play.png" alt="게임마스터 JJ">
+    </div>
+
+    <!-- 하단 -->
+    <div class="play-bottom">
+        <div class="play-log" id="playLog">
+            <div class="log-gm">
+                <div class="gm-label">게임마스터 JJ</div>
+                {% if rules and rules.setup_by_player %}
+                    <!-- 인원별 세팅 차이가 있는 게임: 인원수 질문 -->
+                    안녕하세요! {{ game.name_ko }} 게임을 시작할게요.<br>
+                    <strong>몇 명이서 플레이하시나요?</strong>{% if game.min_players and game.max_players %} ({{ game.min_players }}~{{ game.max_players }}인){% endif %}
+                {% elif rules and rules.setup %}
+                    <!-- 인원별 차이 없는 게임: 바로 세팅 안내 시작 -->
+                    안녕하세요! {{ game.name_ko }} 세팅을 안내해드릴게요.<br>
+                    궁금한 점은 언제든 물어보세요!
+                {% else %}
+                    <!-- 룰 데이터 없음 -->
+                    {{ game.name_ko }} 게임을 시작합니다! 준비가 되면 말씀해주세요.
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- 채팅모드 입력 (기본) -->
+        <div class="chat-mode-input" id="chatModeInput">
+            <textarea class="play-text-input" id="playInput" rows="1" placeholder="메시지를 입력하세요..." onkeydown="handlePlayKey(event)"></textarea>
+            <button class="send-btn" id="playSendBtn" onclick="sendPlayMessage()">
+                <svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+            </button>
+        </div>
+
+        <!-- 음성모드 입력 -->
+        <div class="voice-mode-input" id="voiceModeInput">
+            <!-- 기본: 마이크 버튼 -->
+            <div id="voiceMicArea" style="display:flex;flex-direction:column;align-items:center;gap:10px;">
+                <button class="mic-btn" id="micBtn" onclick="toggleMic()">
+                    <svg viewBox="0 0 24 24"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm-1-9c0-.55.45-1 1-1s1 .45 1 1v6c0 .55-.45 1-1 1s-1-.45-1-1V5zm6 6c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/></svg>
+                </button>
+                <div class="mic-hint" id="micHint">마이크를 눌러 말하세요</div>
+            </div>
+            <!-- LLM 응답 중 / TTS 재생 중 -->
+            <div class="gm-speaking" id="gmSpeaking">
+                <div class="speaking-waves">
+                    <span></span><span></span><span></span><span></span><span></span>
+                </div>
+                <div class="speaking-label" id="speakingLabel">GM이 말하고 있어요</div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_script %}
+<script>
+var gameId = {{ game.id }};
+var playHistory = [];
+var isLoading = false;
+var isRecording = false;
+var mediaRecorder = null;
+var audioChunks = [];
+var audioStream = null;
+var currentAudio = null;    // 재생 중인 TTS Audio 객체
+var isVoiceMode = false;
+var playerCount = null;     // 인원수 (첫 응답에서 파악)
+
+// ── 모드 전환 ──
+function switchMode() {
+    isVoiceMode = !isVoiceMode;
+    var toggle = document.getElementById('modeToggle');
+    var icon = document.getElementById('modeIcon');
+    var label = document.getElementById('modeLabel');
+    var chatInput = document.getElementById('chatModeInput');
+    var voiceInput = document.getElementById('voiceModeInput');
+
+    if (isVoiceMode) {
+        // 음성모드 활성
+        toggle.classList.add('voice-active');
+        // 아이콘을 채팅(키보드)으로 변경
+        icon.innerHTML = '<path d="M20 2H4c-1.1 0-1.99.9-1.99 2L2 22l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zM6 9h12v2H6V9zm8 5H6v-2h8v2zm4-6H6V6h12v2z"/>';
+        label.textContent = '채팅';
+        chatInput.classList.add('hidden');
+        voiceInput.classList.add('active');
+    } else {
+        // 채팅모드 활성
+        toggle.classList.remove('voice-active');
+        // 아이콘을 마이크로 변경
+        icon.innerHTML = '<path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm-1-9c0-.55.45-1 1-1s1 .45 1 1v6c0 .55-.45 1-1 1s-1-.45-1-1V5zm6 6c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/>';
+        label.textContent = '음성';
+        chatInput.classList.remove('hidden');
+        voiceInput.classList.remove('active');
+        // 녹음 중이면 중지
+        if (isRecording) stopRecording();
+        // TTS 재생 중이면 정지
+        if (currentAudio) {
+            currentAudio.pause();
+            currentAudio = null;
+        }
+    }
+}
+
+// ── 대화 관련 ──
+function scrollLogToBottom() {
+    var el = document.getElementById('playLog');
+    el.scrollTop = el.scrollHeight;
+}
+
+function addPlayMessage(role, content) {
+    var el = document.getElementById('playLog');
+    var div = document.createElement('div');
+    if (role === 'user') {
+        div.className = 'log-user';
+        div.textContent = content;
+    } else {
+        div.className = 'log-gm';
+        div.innerHTML = '<div class="gm-label">게임마스터 JJ</div>' + formatMarkdown(content);
+    }
+    el.appendChild(div);
+    scrollLogToBottom();
+}
+
+function showPlayLoading() {
+    var el = document.getElementById('playLog');
+    var div = document.createElement('div');
+    div.className = 'log-loading';
+    div.id = 'playLoadingMsg';
+    div.innerHTML = '<div class="typing-dots"><span>.</span><span>.</span><span>.</span></div>';
+    el.appendChild(div);
+    scrollLogToBottom();
+}
+
+function hidePlayLoading() {
+    var el = document.getElementById('playLoadingMsg');
+    if (el) el.remove();
+}
+
+function handlePlayKey(e) {
+    if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        sendPlayMessage();
+    }
+}
+
+function parsePlayerCount(text) {
+    // 사용자 메시지에서 인원수 파악 (예: "3명", "4인", "3", "세 명")
+    var match = text.match(/(\d+)\s*[명인]/);
+    if (match) return parseInt(match[1]);
+    match = text.match(/^(\d+)$/);
+    if (match) return parseInt(match[1]);
+    var korNum = {'두':2,'세':3,'네':4,'다섯':5,'여섯':6,'일곱':7,'여덟':8};
+    for (var k in korNum) {
+        if (text.includes(k)) return korNum[k];
+    }
+    return null;
+}
+
+function sendPlayMessage() {
+    if (isLoading) return;
+    var input = document.getElementById('playInput');
+    var text = input.value.trim();
+    if (!text) return;
+
+    // 인원수 파악 (아직 설정 안 됐으면)
+    if (!playerCount) {
+        var parsed = parsePlayerCount(text);
+        if (parsed) playerCount = parsed;
+    }
+
+    addPlayMessage('user', text);
+    playHistory.push({role: 'user', content: text});
+    input.value = '';
+    input.style.height = 'auto';
+
+    isLoading = true;
+    document.getElementById('playSendBtn').disabled = true;
+    showPlayLoading();
+
+    fetch('/api/play', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+            game_id: gameId,
+            message: text,
+            history: playHistory.slice(-10),
+            player_count: playerCount
+        })
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+        hidePlayLoading();
+        addPlayMessage('gm', data.reply);
+        playHistory.push({role: 'assistant', content: data.reply});
+    })
+    .catch(function() {
+        hidePlayLoading();
+        addPlayMessage('gm', '네트워크 오류가 발생했습니다.');
+    })
+    .finally(function() {
+        isLoading = false;
+        document.getElementById('playSendBtn').disabled = false;
+    });
+}
+
+// 음성모드에서 GM 응답 중 표시
+function showGmSpeaking() {
+    document.getElementById('voiceMicArea').style.display = 'none';
+    document.getElementById('gmSpeaking').classList.add('active');
+}
+
+function hideGmSpeaking() {
+    document.getElementById('gmSpeaking').classList.remove('active');
+    document.getElementById('voiceMicArea').style.display = 'flex';
+}
+
+// GM Speaking 상태 라벨 업데이트
+function updateSpeakingLabel(text) {
+    var el = document.getElementById('speakingLabel');
+    if (el) el.textContent = text;
+}
+
+// 음성모드 전용 전송
+function sendVoiceMessage(text) {
+    if (isLoading || !text.trim()) return;
+
+    // 인원수 파악
+    if (!playerCount) {
+        var parsed = parsePlayerCount(text);
+        if (parsed) playerCount = parsed;
+    }
+
+    addPlayMessage('user', text);
+    playHistory.push({role: 'user', content: text});
+
+    isLoading = true;
+    showPlayLoading();
+    if (isVoiceMode) {
+        showGmSpeaking();
+        updateSpeakingLabel('답변 생성 중...');
+    }
+
+    fetch('/api/play', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+            game_id: gameId,
+            message: text,
+            history: playHistory.slice(-10),
+            player_count: playerCount
+        })
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+        hidePlayLoading();
+        addPlayMessage('gm', data.reply);
+        playHistory.push({role: 'assistant', content: data.reply});
+
+        // 음성모드면 TTS 재생
+        if (isVoiceMode && data.reply) {
+            playTTS(data.reply);
+        } else {
+            isLoading = false;
+            if (isVoiceMode) hideGmSpeaking();
+        }
+    })
+    .catch(function() {
+        hidePlayLoading();
+        addPlayMessage('gm', '네트워크 오류가 발생했습니다.');
+        isLoading = false;
+        if (isVoiceMode) hideGmSpeaking();
+    });
+}
+
+// TTS 재생 (OpenAI gpt-4o-mini-tts)
+function playTTS(text) {
+    updateSpeakingLabel('GM이 말하고 있어요');
+
+    fetch('/api/tts', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ text: text })
+    })
+    .then(function(r) {
+        if (!r.ok) throw new Error('TTS 실패');
+        return r.blob();
+    })
+    .then(function(blob) {
+        var url = URL.createObjectURL(blob);
+        currentAudio = new Audio(url);
+        currentAudio.onended = function() {
+            URL.revokeObjectURL(url);
+            currentAudio = null;
+            isLoading = false;
+            hideGmSpeaking();
+        };
+        currentAudio.onerror = function() {
+            URL.revokeObjectURL(url);
+            currentAudio = null;
+            isLoading = false;
+            hideGmSpeaking();
+        };
+        currentAudio.play();
+    })
+    .catch(function(err) {
+        console.error('TTS 오류:', err);
+        isLoading = false;
+        hideGmSpeaking();
+    });
+}
+
+// 녹음된 오디오를 STT API로 전송
+function sendAudioToSTT(audioBlob) {
+    updateSpeakingLabel('음성 인식 중...');
+    showGmSpeaking();
+
+    var formData = new FormData();
+    formData.append('audio', audioBlob, 'recording.webm');
+
+    fetch('/api/stt', {
+        method: 'POST',
+        body: formData
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+        var text = (data.text || '').trim();
+        if (!text) {
+            hideGmSpeaking();
+            document.getElementById('micHint').textContent = '음성을 인식하지 못했습니다. 다시 시도해주세요.';
+            return;
+        }
+        // STT 성공 → 화면에 표시 후 LLM 호출
+        sendVoiceMessage(text);
+    })
+    .catch(function(err) {
+        console.error('STT 오류:', err);
+        hideGmSpeaking();
+        document.getElementById('micHint').textContent = '음성 인식 오류. 다시 시도해주세요.';
+    });
+}
+
+// ── 마이크 (MediaRecorder + 침묵 감지 + OpenAI STT) ──
+var silenceTimer = null;       // 침묵 감지 타이머
+var analyserNode = null;       // 볼륨 분석용
+var audioContext = null;
+var silenceCheckInterval = null;
+var SILENCE_THRESHOLD = 15;    // 볼륨 임계값 (0~255, 낮을수록 민감)
+var SILENCE_DURATION = 1500;   // 침묵 지속 시간 (ms) - 이 시간 동안 조용하면 자동 중지
+var isSpeaking = false;        // 말하기 시작했는지 (최초 침묵 무시용)
+
+function toggleMic() {
+    if (isRecording) {
+        stopRecording();
+    } else {
+        startRecording();
+    }
+}
+
+function startRecording() {
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        alert('이 브라우저는 마이크 녹음을 지원하지 않습니다.');
+        return;
+    }
+
+    navigator.mediaDevices.getUserMedia({ audio: true })
+    .then(function(stream) {
+        audioStream = stream;
+        audioChunks = [];
+        isSpeaking = false;
+
+        // ── 볼륨 분석 설정 (침묵 감지용) ──
+        audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        var source = audioContext.createMediaStreamSource(stream);
+        analyserNode = audioContext.createAnalyser();
+        analyserNode.fftSize = 512;
+        source.connect(analyserNode);
+
+        // ── MediaRecorder 설정 ──
+        var mimeType = 'audio/webm';
+        if (typeof MediaRecorder.isTypeSupported === 'function' && !MediaRecorder.isTypeSupported('audio/webm')) {
+            mimeType = 'audio/mp4';
+        }
+
+        mediaRecorder = new MediaRecorder(stream, { mimeType: mimeType });
+
+        mediaRecorder.ondataavailable = function(e) {
+            if (e.data.size > 0) audioChunks.push(e.data);
+        };
+
+        mediaRecorder.onstop = function() {
+            // 정리
+            stopSilenceDetection();
+            if (audioStream) {
+                audioStream.getTracks().forEach(function(t) { t.stop(); });
+                audioStream = null;
+            }
+            if (audioContext) {
+                audioContext.close();
+                audioContext = null;
+            }
+
+            if (audioChunks.length === 0) return;
+            var blob = new Blob(audioChunks, { type: mimeType });
+            audioChunks = [];
+            sendAudioToSTT(blob);
+        };
+
+        mediaRecorder.start();
+        isRecording = true;
+        document.getElementById('micBtn').classList.add('recording');
+        document.getElementById('micHint').textContent = '듣고 있어요...';
+        document.getElementById('micHint').classList.add('recording');
+
+        // ── 침묵 감지 시작 ──
+        startSilenceDetection();
+    })
+    .catch(function(err) {
+        console.error('마이크 접근 실패:', err);
+        alert('마이크 권한을 허용해주세요.');
+    });
+}
+
+function startSilenceDetection() {
+    var dataArray = new Uint8Array(analyserNode.frequencyBinCount);
+
+    silenceCheckInterval = setInterval(function() {
+        analyserNode.getByteFrequencyData(dataArray);
+
+        // 평균 볼륨 계산
+        var sum = 0;
+        for (var i = 0; i < dataArray.length; i++) sum += dataArray[i];
+        var avg = sum / dataArray.length;
+
+        if (avg > SILENCE_THRESHOLD) {
+            // 소리 감지됨 → 말하기 시작
+            isSpeaking = true;
+            if (silenceTimer) {
+                clearTimeout(silenceTimer);
+                silenceTimer = null;
+            }
+            document.getElementById('micHint').textContent = '듣고 있어요...';
+        } else if (isSpeaking && !silenceTimer) {
+            // 말하다가 침묵 시작 → 타이머 시작
+            silenceTimer = setTimeout(function() {
+                // 침묵 지속 → 자동 녹음 중지
+                document.getElementById('micHint').textContent = '전송 중...';
+                stopRecording();
+            }, SILENCE_DURATION);
+        }
+    }, 100);  // 100ms마다 체크
+}
+
+function stopSilenceDetection() {
+    if (silenceCheckInterval) {
+        clearInterval(silenceCheckInterval);
+        silenceCheckInterval = null;
+    }
+    if (silenceTimer) {
+        clearTimeout(silenceTimer);
+        silenceTimer = null;
+    }
+    analyserNode = null;
+}
+
+function stopRecording() {
+    isRecording = false;
+    document.getElementById('micBtn').classList.remove('recording');
+    document.getElementById('micHint').textContent = '마이크를 눌러 말하세요';
+    document.getElementById('micHint').classList.remove('recording');
+    if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+        mediaRecorder.stop();
+    }
+    mediaRecorder = null;
+}
+
+// textarea 자동 높이
+document.getElementById('playInput').addEventListener('input', function() {
+    this.style.height = 'auto';
+    this.style.height = Math.min(this.scrollHeight, 80) + 'px';
+});
+</script>
+{% endblock %}

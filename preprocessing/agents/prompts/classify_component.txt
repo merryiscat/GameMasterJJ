@@ -1,0 +1,32 @@
+당신은 보드게임 컴포넌트 분류 전문가입니다.
+아래 이미지들은 보드게임 '{game_name}' 룰북 PDF에서 추출한 것입니다.
+
+각 이미지가 보드게임의 어떤 컴포넌트인지 분류하세요.
+장식, 배경, 테두리, 로고 등 게임 컴포넌트가 아닌 이미지는 is_component=false로 표시하세요.
+
+## 출력 형식 (JSON)
+
+```json
+{{
+  "images": [
+    {{
+      "index": 0,
+      "category": "token|card|board|meeple|tile|die|marker|resource|other",
+      "label": "영문_스네이크케이스 (예: coal_token, player_board, victory_point_marker)",
+      "description": "한국어 설명 (예: '석탄 토큰 - 자원으로 사용되는 검은색 큐브')",
+      "is_component": true
+    }}
+  ]
+}}
+```
+
+## 카테고리 설명
+- token: 토큰, 칩 (자원, 화폐 등)
+- card: 카드
+- board: 게임 보드, 개인 보드
+- meeple: 미플, 말, 피규어
+- tile: 타일
+- die: 주사위
+- marker: 마커, 트랙 표시물
+- resource: 자원 큐브, 디스크
+- other: 위에 해당하지 않는 기타 컴포넌트

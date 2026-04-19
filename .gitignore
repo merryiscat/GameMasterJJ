@@ -158,3 +158,9 @@ session_backups/
 data/
 reference/archive/
 reference/checkpoint/
+
+# 폐기/이관 파일 보관소
+00_old/
+
+# Playwright MCP 로그
+.playwright-mcp/

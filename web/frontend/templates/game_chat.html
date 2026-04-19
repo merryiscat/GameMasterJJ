@@ -1,0 +1,494 @@
+{% extends "base.html" %}
+{% block title %}{{ game.name_ko }} - 게임마스터 안내{% endblock %}
+
+{% block extra_style %}
+/* ── 채팅 레이아웃 ── */
+.chat-container {
+    display: flex;
+    flex-direction: column;
+    height: calc(100vh - 64px);
+}
+
+/* 상단 헤더 */
+.chat-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 16px;
+    background: var(--bg-secondary);
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+}
+.chat-back {
+    display: flex;
+    align-items: center;
+    color: var(--teal-light);
+    text-decoration: none;
+}
+.chat-back svg {
+    width: 20px;
+    height: 20px;
+    fill: var(--teal-light);
+}
+.chat-header-info {
+    flex: 1;
+    min-width: 0;
+}
+.chat-header-info .name {
+    font-family: 'Jua', sans-serif;
+    font-size: 16px;
+    color: var(--text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.chat-header-info .sub {
+    font-size: 11px;
+    color: var(--teal-light);
+}
+
+/* 게임 진행 버튼 (헤더 우측) */
+.play-start-btn {
+    flex-shrink: 0;
+    padding: 8px 14px;
+    border-radius: 8px;
+    border: 1px solid var(--teal);
+    background: rgba(13,148,136,0.15);
+    color: var(--teal-light);
+    font-size: 12px;
+    font-weight: 600;
+    font-family: 'Pretendard', sans-serif;
+    cursor: pointer;
+    text-decoration: none;
+    transition: all 0.2s;
+}
+.play-start-btn:hover {
+    background: var(--teal);
+    color: #fff;
+}
+
+/* 채팅 메시지 영역 */
+.chat-messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+/* 룰 카드 (초기 표시) */
+.rule-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 4px;
+}
+.rule-card h4 {
+    font-family: 'Jua', sans-serif;
+    font-size: 14px;
+    color: var(--teal-light);
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+.rule-card .rule-content {
+    font-size: 13px;
+    color: var(--text-secondary);
+    line-height: 1.7;
+}
+.rule-content h2, .rule-content h3 {
+    font-family: 'Jua', sans-serif;
+    font-size: 14px;
+    color: var(--text-primary);
+    margin: 6px 0 2px;
+}
+.rule-content h2:first-child, .rule-content h3:first-child {
+    margin-top: 0;
+}
+.rule-content p {
+    margin: 2px 0;
+}
+.rule-content br {
+    display: none;
+}
+.rule-content strong {
+    color: var(--text-primary);
+}
+.rule-content ul, .rule-content ol {
+    padding-left: 18px;
+    margin: 4px 0;
+}
+.rule-content li {
+    margin: 3px 0;
+}
+/* 테이블 스타일 */
+.rule-content .rule-table, .msg-gm .rule-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 8px 0;
+    font-size: 12px;
+}
+.rule-content .rule-table th, .msg-gm .rule-table th {
+    background: rgba(13,148,136,0.15);
+    color: var(--teal-light);
+    padding: 6px 8px;
+    text-align: left;
+    font-weight: 600;
+    border-bottom: 1px solid var(--border);
+}
+.rule-content .rule-table td, .msg-gm .rule-table td {
+    padding: 5px 8px;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+    color: var(--text-secondary);
+}
+.rule-card .rule-text {
+    max-height: 120px;
+    overflow: hidden;
+    position: relative;
+}
+.rule-card .rule-text.expanded {
+    max-height: none;
+}
+.rule-card .rule-toggle {
+    background: none;
+    border: none;
+    color: var(--teal-light);
+    font-size: 12px;
+    cursor: pointer;
+    padding: 4px 0;
+    font-family: 'Pretendard', sans-serif;
+}
+
+/* 시스템 메시지 */
+.msg-system {
+    text-align: center;
+    font-size: 12px;
+    color: var(--text-muted);
+    padding: 8px;
+}
+
+/* 유저 메시지 */
+.msg-user {
+    align-self: flex-end;
+    max-width: 85%;
+    padding: 12px 16px;
+    border-radius: 16px 16px 4px 16px;
+    background: var(--teal);
+    color: #fff;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+/* GM 메시지 */
+.msg-gm {
+    align-self: flex-start;
+    max-width: 85%;
+    padding: 12px 16px;
+    border-radius: 16px 16px 16px 4px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    color: var(--text-primary);
+    font-size: 14px;
+    line-height: 1.6;
+}
+.msg-gm .gm-label {
+    font-size: 11px;
+    color: var(--teal-light);
+    font-weight: 600;
+    margin-bottom: 4px;
+}
+
+/* 로딩 표시 */
+.msg-loading {
+    align-self: flex-start;
+    padding: 12px 16px;
+    border-radius: 16px 16px 16px 4px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+    font-size: 14px;
+}
+.typing-dots span {
+    animation: blink 1.4s infinite both;
+}
+.typing-dots span:nth-child(2) { animation-delay: 0.2s; }
+.typing-dots span:nth-child(3) { animation-delay: 0.4s; }
+@keyframes blink {
+    0%, 80%, 100% { opacity: 0.2; }
+    40% { opacity: 1; }
+}
+
+/* 입력 영역 */
+.chat-input-area {
+    flex-shrink: 0;
+    padding: 12px 16px;
+    background: var(--bg-secondary);
+    border-top: 1px solid var(--border);
+    display: flex;
+    gap: 8px;
+    align-items: flex-end;
+}
+.chat-input {
+    flex: 1;
+    padding: 10px 14px;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    background: var(--bg-card);
+    color: var(--text-primary);
+    font-size: 14px;
+    font-family: 'Pretendard', sans-serif;
+    outline: none;
+    resize: none;
+    max-height: 100px;
+    line-height: 1.4;
+}
+.chat-input::placeholder { color: var(--text-muted); }
+.chat-input:focus { border-color: var(--teal); }
+.chat-send {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    border: none;
+    background: var(--teal);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: background 0.2s;
+}
+.chat-send:hover { background: var(--emerald-mid); }
+.chat-send:disabled { background: var(--text-muted); cursor: not-allowed; }
+.chat-send svg {
+    width: 20px;
+    height: 20px;
+    fill: #fff;
+}
+{% endblock %}
+
+{% block content %}
+<div class="chat-container">
+    <!-- 헤더 -->
+    <div class="chat-header">
+        <a href="/games/{{ game.id }}?from={{ from_page|default('games') }}" class="chat-back">
+            <svg viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
+        </a>
+        <div class="chat-header-info">
+            <div class="name">{{ game.name_ko }}</div>
+            <div class="sub">게임마스터 JJ</div>
+        </div>
+        <a href="/games/{{ game.id }}/play?from={{ from_page|default('games') }}" class="play-start-btn">게임 진행</a>
+    </div>
+
+    <!-- 메시지 영역 -->
+    <div class="chat-messages" id="chatMessages">
+        <!-- 룰 카드 (있으면 표시) -->
+        {% if rules %}
+            {% if rules.intro %}
+            <div class="rule-card">
+                <h4>게임 소개</h4>
+                <div class="rule-text rule-content" id="rule-intro">{{ rules.intro|md }}</div>
+                <button class="rule-toggle" onclick="toggleRule('rule-intro', this)">더보기</button>
+            </div>
+            {% endif %}
+
+            {% if rules.components %}
+            <div class="rule-card">
+                <h4>구성품</h4>
+                <div class="rule-text rule-content" id="rule-components">{{ rules.components|md }}</div>
+                <button class="rule-toggle" onclick="toggleRule('rule-components', this)">더보기</button>
+            </div>
+            {% endif %}
+
+            {% if rules.setup %}
+            <div class="rule-card">
+                <h4>게임 준비</h4>
+                <div class="rule-text rule-content" id="rule-setup">{{ rules.setup|md }}</div>
+                <button class="rule-toggle" onclick="toggleRule('rule-setup', this)">더보기</button>
+            </div>
+            {% endif %}
+
+            {% if rules.gameplay %}
+            <div class="rule-card">
+                <h4>게임 진행</h4>
+                <div class="rule-text rule-content" id="rule-gameplay">{{ rules.gameplay|md }}</div>
+                <button class="rule-toggle" onclick="toggleRule('rule-gameplay', this)">더보기</button>
+            </div>
+            {% endif %}
+
+            {% if rules.end_condition or rules.scoring or rules.win_condition %}
+            <div class="rule-card">
+                <h4>종료 / 승리 조건</h4>
+                <div class="rule-text rule-content" id="rule-ending">
+                    {% if rules.end_condition %}{{ rules.end_condition|md }}{% endif %}
+                    {% if rules.scoring %}{{ rules.scoring|md }}{% endif %}
+                    {% if rules.win_condition %}{{ rules.win_condition|md }}{% endif %}
+                </div>
+                <button class="rule-toggle" onclick="toggleRule('rule-ending', this)">더보기</button>
+            </div>
+            {% endif %}
+
+            {% if rules.special_rules %}
+            <div class="rule-card">
+                <h4>특수 규칙</h4>
+                <div class="rule-text rule-content" id="rule-special">{{ rules.special_rules|md }}</div>
+                <button class="rule-toggle" onclick="toggleRule('rule-special', this)">더보기</button>
+            </div>
+            {% endif %}
+        {% else %}
+            <!-- 룰 데이터 없음 - 게임 설명 기반 -->
+            {% if game.description_ko %}
+            <div class="rule-card">
+                <h4>게임 정보</h4>
+                <div class="rule-text rule-content" id="rule-desc"><p>{{ game.description_ko[:300] }}{% if game.description_ko|length > 300 %}...{% endif %}</p></div>
+                {% if game.description_ko|length > 300 %}
+                <button class="rule-toggle" onclick="toggleRule('rule-desc', this)">더보기</button>
+                {% endif %}
+            </div>
+            {% endif %}
+        {% endif %}
+
+        <!-- 환영 메시지 -->
+        <div class="msg-gm">
+            <div class="gm-label">게임마스터 JJ</div>
+            {{ game.name_ko }}에 대해 궁금한 점이 있으면 물어보세요! 룰, 전략, 게임 진행 방법 등 무엇이든 도와드릴게요.
+        </div>
+    </div>
+
+    <!-- 입력 영역 -->
+    <div class="chat-input-area">
+        <textarea class="chat-input" id="chatInput" rows="1" placeholder="룰에 대해 질문하세요..." onkeydown="handleKey(event)"></textarea>
+        <button class="chat-send" id="sendBtn" onclick="sendMessage()">
+            <svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+        </button>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_script %}
+<script>
+var gameId = {{ game.id }};
+var chatHistory = [];
+var isLoading = false;
+
+function toggleRule(id, btn) {
+    var el = document.getElementById(id);
+    el.classList.toggle('expanded');
+    btn.textContent = el.classList.contains('expanded') ? '접기' : '더보기';
+}
+
+function scrollToBottom() {
+    var el = document.getElementById('chatMessages');
+    el.scrollTop = el.scrollHeight;
+}
+
+function addMessage(role, content) {
+    var el = document.getElementById('chatMessages');
+    var div = document.createElement('div');
+
+    if (role === 'user') {
+        div.className = 'msg-user';
+        div.textContent = content;
+    } else {
+        div.className = 'msg-gm';
+        div.innerHTML = '<div class="gm-label">게임마스터 JJ</div>' + formatMarkdown(content);
+    }
+
+    el.appendChild(div);
+    scrollToBottom();
+}
+
+function showLoading() {
+    var el = document.getElementById('chatMessages');
+    var div = document.createElement('div');
+    div.className = 'msg-loading';
+    div.id = 'loadingMsg';
+    div.innerHTML = '<div class="typing-dots"><span>.</span><span>.</span><span>.</span></div>';
+    el.appendChild(div);
+    scrollToBottom();
+}
+
+function hideLoading() {
+    var el = document.getElementById('loadingMsg');
+    if (el) el.remove();
+}
+
+function handleKey(e) {
+    if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        sendMessage();
+    }
+}
+
+function sendMessage() {
+    if (isLoading) return;
+
+    var input = document.getElementById('chatInput');
+    var text = input.value.trim();
+    if (!text) return;
+
+    // 유저 메시지 표시
+    addMessage('user', text);
+    chatHistory.push({role: 'user', content: text});
+    input.value = '';
+    input.style.height = 'auto';
+
+    // 로딩 표시
+    isLoading = true;
+    document.getElementById('sendBtn').disabled = true;
+    showLoading();
+
+    // API 호출
+    fetch('/api/chat', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+            game_id: gameId,
+            message: text,
+            history: chatHistory.slice(-10)
+        })
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+        hideLoading();
+        addMessage('gm', data.reply);
+        chatHistory.push({role: 'assistant', content: data.reply});
+    })
+    .catch(function() {
+        hideLoading();
+        addMessage('gm', '네트워크 오류가 발생했습니다. 다시 시도해주세요.');
+    })
+    .finally(function() {
+        isLoading = false;
+        document.getElementById('sendBtn').disabled = false;
+        input.focus();
+    });
+}
+
+// textarea 자동 높이 조절
+document.getElementById('chatInput').addEventListener('input', function() {
+    this.style.height = 'auto';
+    this.style.height = Math.min(this.scrollHeight, 100) + 'px';
+});
+
+// 페이지 로드 시 채팅 영역 맨 위로 스크롤
+document.getElementById('chatMessages').scrollTop = 0;
+
+// 150자 이하인 룰 카드는 더보기 버튼 숨기고 펼침 처리
+document.querySelectorAll('.rule-card').forEach(function(card) {
+    var textEl = card.querySelector('.rule-text');
+    var toggleBtn = card.querySelector('.rule-toggle');
+    if (textEl && toggleBtn) {
+        if (textEl.textContent.trim().length <= 150) {
+            textEl.classList.add('expanded');
+            toggleBtn.style.display = 'none';
+        }
+    }
+});
+
+// 초기 로드: 맨 위 유지 (scrollToBottom 호출하지 않음)
+</script>
+{% endblock %}
